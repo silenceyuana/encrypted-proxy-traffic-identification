@@ -1,0 +1,48 @@
+{
+  "source": "https://zenodo.org/records/13624058",
+  "archive_md5": "6c64268ec35414fc9f483a7a4ed43755",
+  "labels": {
+    "ssr": "ShadowsocksR",
+    "trojan": "Trojan",
+    "v2ray": "VMess"
+  },
+  "window_seconds": 60,
+  "minimum_packets": 12,
+  "features": [
+    "packet_count",
+    "total_bytes",
+    "duration_s",
+    "packet_rate",
+    "frame_mean",
+    "frame_std",
+    "frame_median",
+    "frame_p90",
+    "frame_min",
+    "frame_max",
+    "iat_mean_ms",
+    "iat_std_ms",
+    "iat_median_ms",
+    "iat_p90_ms",
+    "iat_max_ms",
+    "up_count_ratio",
+    "down_up_bytes_ratio",
+    "up_frame_mean",
+    "down_frame_mean",
+    "direction_switch_rate"
+  ],
+  "seed": 42,
+  "train_windows_per_class": 1581,
+  "test_windows_per_class": 573,
+  "capture_count_per_class": {
+    "ShadowsocksR": 103,
+    "Trojan": 41,
+    "VMess": 64
+  },
+  "windows_per_class": {
+    "ShadowsocksR": 6327,
+    "VMess": 3920,
+    "Trojan": 2154
+  },
+  "sklearn": "1.9.1",
+  "scope_warning": "Mining traffic only; classes are ShadowsocksR, Trojan and VMess, not Shadowsocks/VLESS/HTTPS."
+}

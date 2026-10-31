@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+~$*
+qa/
+data/raw/
+sources/
+.env
+.env.*
+*.pem
+*.key

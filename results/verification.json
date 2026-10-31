@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "checks": [
+    "ja4tor: all saved baseline metrics match predictions",
+    "mineshark: all saved baseline metrics match predictions",
+    "JA4Tor input hashes match; MineShark train/test captures disjoint",
+    "MineShark original archive MD5 matches"
+  ]
+}

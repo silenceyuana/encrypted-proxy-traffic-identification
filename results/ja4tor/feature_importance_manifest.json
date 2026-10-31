@@ -1,0 +1,9 @@
+{
+  "method": "Random Forest mean decrease in impurity (MDI)",
+  "ranking_data": "train.csv only",
+  "n_train": 20000,
+  "baseline_test_accuracy_verified": 0.9212,
+  "seed": 42,
+  "training_sha256": "a7f114e4ccaed013fad6f24e68b7e6cf049856ff3ef811e03d32d114bc4c1aef",
+  "limitations": "MDI can favor continuous/high-cardinality variables; correlated features share credit. No causal or cross-domain interpretation."
+}
