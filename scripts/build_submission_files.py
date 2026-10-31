@@ -1,0 +1,96 @@
+from pathlib import Path
+from docx import Document
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from PIL import Image, ImageDraw, ImageFont
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / 'Evaluating_Machine_Learning_Encrypted_Traffic_Classification_English_Main_Manuscript.docx'
+HIGHLIGHTS = ROOT / 'Highlights_Encrypted_Traffic_Classification.docx'
+GA = ROOT / 'Graphical_Abstract_Encrypted_Traffic_Classification.png'
+
+def font(run, size=10.5, bold=False):
+    run.font.name = 'Arial'; run.font.size = Pt(size); run.bold = bold
+    rpr = run._element.get_or_add_rPr(); fs = rpr.rFonts
+    if fs is None:
+        fs = OxmlElement('w:rFonts'); rpr.insert(0, fs)
+    for key in ('ascii','hAnsi','cs'): fs.set(qn('w:'+key), 'Arial')
+
+def para(doc, text, style=None):
+    p = doc.add_paragraph(style=style); p.paragraph_format.line_spacing = 1.15; p.paragraph_format.space_after = Pt(6)
+    font(p.add_run(text)); return p
+
+def head(doc, text, level=1):
+    p = doc.add_heading(text, level=level); p.paragraph_format.keep_with_next = True
+    for r in p.runs: font(r, 13 if level == 1 else 11, True)
+
+def table(doc, headers, rows):
+    t = doc.add_table(rows=1, cols=len(headers)); t.alignment = WD_TABLE_ALIGNMENT.CENTER; t.style = 'Table Grid'
+    for i, h in enumerate(headers): t.rows[0].cells[i].text = str(h)
+    for row in rows:
+        cells = t.add_row().cells
+        for i, v in enumerate(row): cells[i].text = str(v)
+    for row in t.rows:
+        for cell in row.cells:
+            for p in cell.paragraphs:
+                p.paragraph_format.space_after = Pt(0)
+                for r in p.runs: font(r, 8.5, row is t.rows[0])
+
+def build_main():
+    doc = Document(); sec = doc.sections[0]
+    sec.top_margin = Inches(.8); sec.bottom_margin = Inches(.8); sec.left_margin = Inches(.85); sec.right_margin = Inches(.85)
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER; font(p.add_run('Evaluating Machine Learning-Based Encrypted Traffic Classification Under Capture-Disjoint and Workload-Shift Conditions'), 18, True)
+    p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER; font(p.add_run('Zhang Xiaoyuan | Independent Researcher | silenceyuan2018@gmail.com | ORCID 0009-0006-6147-9256'), 10)
+    head(doc, 'Abstract')
+    para(doc, 'Encrypted proxy traffic is difficult to distinguish from other encrypted network workloads because payload inspection is unavailable. This paper reports two separate classification studies rather than a four-class proxy benchmark. JA4Tor uses five source labels; MineShark uses three mining-trace labels. JA4Tor Fixed-split Evaluation trains on 20,000 public training flows and tests on 5,000 fixed flows, obtaining 92.12% accuracy with Random Forest and 92.08% with XGBoost. Repeated Internal Evaluation resplits the training file into 16,000 and 4,000 flows for ten runs, obtaining 87.47% plus or minus 0.39% with Random Forest and 87.97% plus or minus 0.44% with XGBoost. MineShark uses 4,743 training and 1,719 test windows, with 573 test windows per class; SVM reaches 97.27% in the source-capture-disjoint split and falls to 46.66% under NBMiner-to-XMRig workload shift. JA4Tor capture provenance is unavailable, and no external validation on CIC-Darknet2020 or ISCXVPN2016 was completed because the data files were unavailable. Neither source supports the complete Shadowsocks, VLESS, Trojan, and ordinary-HTTPS taxonomy.')
+    para(doc, 'Keywords: encrypted traffic; proxy detection; machine learning; capture-disjoint evaluation; workload shift; reproducibility')
+    sections = [
+      ('1 Introduction', ['Encrypted tunnels protect content but also limit payload inspection. Packet lengths, inter-arrival times, directionality, and flow duration remain observable and can support statistical classification. However, these signals also encode application workload, network path, endpoint implementation, and capture conditions. This paper therefore treats accuracy as conditional evidence rather than a universal protocol guarantee.', 'The study compares Random Forest, radial-basis SVM, KNN, Logistic Regression, HistGradientBoosting, and XGBoost using non-payload flow statistics. It separates fixed-file evaluation, repeated internal evaluation, source-capture-disjoint evaluation, and workload-shift evaluation. The public sources do not provide a complete four-class benchmark for Shadowsocks, VLESS, Trojan, and ordinary HTTPS, so labels are preserved exactly as published.']),
+      ('2 Related Work', ['Classical encrypted-traffic research established that timing, burst structure, packet length, and direction remain informative under VPN and TLS encryption. Website fingerprinting and Tor studies showed that traffic shape can reveal behavioral information even when payloads are hidden. Later work on obfuscated proxies and encrypted malware traffic emphasized implementation and encapsulated-handshake effects.', 'JA3 and JA4 summarize protocol-visible handshake or client properties, whereas this paper uses flow statistics. These are related but distinct signals. Cross-domain generalization studies and data-leakage analyses motivate capture-level grouping: random row splits can place highly correlated windows from one capture into both train and test. The present work uses references on VPN traffic, Tor fingerprinting, HTTPS analysis, encrypted malware classification, and website fingerprinting to position the results as an auditable baseline rather than a state-of-the-art claim.']),
+      ('3 Data Sources and Label Audit', ['JA4Tor contains NonTor, Tor, Tor-over-Shadowsocks, Tor-over-Trojan, and Tor-over-VMess labels. Its training file contains 20,000 flows and its fixed test file contains 5,000 flows. The public CSV files do not provide complete row-to-PCAP or row-to-capture provenance; therefore the JA4Tor experiments are called Fixed-split Evaluation and Repeated Internal Evaluation, not capture-disjoint evaluation. NonTor is retained as a source label and is not reinterpreted as ordinary HTTPS.', 'MineShark contains ShadowsocksR, Trojan, and VMess mining-trace labels. The current seed-42 audit uses 4,743 training windows and 1,719 test windows, with 1,581 and 573 windows per class. An older result file contains 740 supports per class, or 2,220 windows total; that number belongs to an earlier repeated-experiment split with different candidate sampling and is not merged with the current seed-42 experiment. The paper reports 1,719 for the primary table and preserves 2,220 only as an historical audit note.', 'CIC-Darknet2020 and ISCXVPN2016 files were not available in the workspace. No external training, testing, or accuracy calculation was completed. Any future experiment will preserve each source dataset’s original label semantics and will not rename VPN, Tor, or dark-net categories as proxy protocol classes.']),
+      ('4 Methods and Evaluation Protocols', ['The JA4Tor feature set contains 30 packet-length, byte-count, duration, rate, and forward, backward, and flow IAT statistics. MineShark uses 20 window features including frame-length quantiles, IAT quantiles, direction ratios, byte totals, duration, packet rate, and direction-switch rate. IP addresses, ports, pool names, and acquisition dates are excluded from classifier inputs.', 'Missing and non-finite values are imputed from training data only. SVM, KNN, and linear models use training-fitted standardization; tree models use the same imputation but are scale-insensitive. RF uses 200 trees, minimum leaf size 2, and seed 42. SVM uses an RBF kernel with C equal to 10. KNN uses k equal to 7. XGBoost uses the fixed histogram configuration recorded in the run manifest. No test-set tuning is performed.', 'Fixed-split Evaluation trains on all 20,000 JA4Tor training flows and tests on the fixed 5,000-flow test file. Repeated Internal Evaluation resplits the public training file into 16,000 training and 4,000 internal test flows for ten seeds. Both protocols use the same feature definitions and preprocessing order, but their training sizes and test sources differ.', 'MineShark assigns complete source captures to train or test before balanced window sampling. The seed-42 split uses 72 and 31 ShadowsocksR captures, 29 and 12 Trojan captures, and 45 and 19 VMess captures. The selected test set is 573 windows per class. The workload-shift test trains on NBMiner windows and tests on XMRig windows.']),
+      ('5 Results', ['On JA4Tor test.csv, RF reaches 92.12% and XGBoost reaches 92.08%. In the ten-run internal protocol, RF reaches 87.47% plus or minus 0.39% and XGBoost reaches 87.97% plus or minus 0.44%. The difference is explained by the fixed versus internally resampled test source and by the 20,000 versus 16,000 training sizes, not by incompatible preprocessing.', 'On the current MineShark source-capture-disjoint split, SVM reaches 97.27%, RF 94.30%, and KNN 92.44%. SVM recalls ShadowsocksR, Trojan, and VMess at 98.60%, 96.51%, and 96.68%. Under NBMiner-to-XMRig workload shift, RF, SVM, and KNN obtain 44.81%, 46.66%, and 55.34%.', 'The feature-importance analysis identifies directional packet length, forward packet-length variation, Down/Up Ratio, and IAT statistics as influential. These associations are conditional on the dataset and should not be interpreted as causal protocol signatures.']),
+      ('6 Reproducibility and Validity', ['The repository stores input hashes, run manifests, feature definitions, capture split CSVs, predictions, per-class metrics, confusion matrices, and scripts. Confusion-matrix totals, support counts, and accuracy are cross-checked. Repeated standard deviations describe variation under the selected resampling protocol, not uncertainty over every possible network, client, or protocol version.', 'The strongest evidence is the MineShark source-capture-disjoint split because complete source captures are assigned before balancing. The strongest limitation is that JA4Tor lacks complete capture provenance. The datasets also lack a complete verified four-class taxonomy. These limitations narrow the claim but do not invalidate the value of an auditable statistical baseline.', 'External validation remains a planned task. Before reporting any CIC-Darknet2020 or ISCXVPN2016 score, the study must obtain legal data files, preserve checksums, verify label dictionaries, check capture grouping, and confirm feature compatibility.']),
+      ('7 Conclusion', ['The study supports interpretable machine-learning baselines for encrypted traffic classification under clearly stated conditions. RF and XGBoost perform strongly on the JA4Tor fixed split, while the repeated internal protocol produces lower but stable estimates. SVM performs strongly on current MineShark source-capture-disjoint windows, but performance drops sharply when the mining workload changes from NBMiner to XMRig.', 'The results should not be presented as a universal four-class protocol detector. Public data lack complete VLESS and ordinary-HTTPS truth, JA4Tor lacks complete capture provenance, and external validation is not yet complete. The practical contribution is an evidence chain that makes sample counts, preprocessing, uncertainty, capture grouping, and workload limits explicit.'])]
+    for title, paragraphs in sections:
+        head(doc, title)
+        for text in paragraphs: para(doc, text)
+    head(doc, 'Tables and Figures')
+    para(doc, 'Table 1. Dataset labels and evaluation scope.')
+    table(doc, ['Source','Observed labels','Evaluation evidence','Scope limitation'], [['JA4Tor','NonTor, Tor, Tor-over-Shadowsocks, Tor-over-Trojan, Tor-over-VMess','20,000 train; 5,000 fixed test','No VLESS; NonTor is not verified HTTPS; no capture provenance'],['MineShark','ShadowsocksR, Trojan, VMess','4,743 train; 1,719 test; 573 per class','No VLESS or ordinary HTTPS; mining workload']])
+    para(doc, 'Table 2. Primary results (percent).')
+    table(doc, ['Evaluation','Model','Train','Test','Accuracy','Macro recall'], [['JA4Tor Fixed-split','RF','20,000','5,000','92.12','92.12'],['JA4Tor Fixed-split','XGBoost','20,000','5,000','92.08','92.08'],['JA4Tor Repeated Internal','RF','16,000/run','4,000/run','87.47 ± 0.39','87.47'],['JA4Tor Repeated Internal','XGBoost','16,000/run','4,000/run','87.97 ± 0.44','87.97'],['MineShark capture-disjoint','SVM','4,743','1,719','97.27','97.27'],['MineShark workload shift','SVM','3,702','1,899','46.66','42.87']])
+    for path, cap in [(ROOT/'results/figures/methodology.png','Figure 1. Reproducible feature extraction and evaluation workflow.'),(ROOT/'results/ja4tor/accuracy_recall.png','Figure 2. JA4Tor accuracy and macro recall.'),(ROOT/'results/mineshark/workload_shift_comparison.png','Figure 3. Workload-shift performance.'),(ROOT/'results/ja4tor/feature_importance.png','Figure 4. Random Forest feature importance.')]:
+        if path.exists():
+            p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; p.add_run().add_picture(str(path), width=Inches(6.2)); q=doc.add_paragraph(); q.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(q.add_run(cap),9)
+    head(doc, 'Declarations')
+    head(doc, 'Competing interests', 2); para(doc, 'The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.')
+    head(doc, 'Funding', 2); para(doc, 'This research received no external funding.')
+    head(doc, 'Data availability', 2); para(doc, 'Data and code available at https://github.com/silenceyuana/encrypted-proxy-traffic-identification. JA4Tor is available at https://github.com/das-lab/JA4Tor and MineShark at https://zenodo.org/records/13624058. Raw third-party archives are not redistributed. CIC-Darknet2020 and ISCXVPN2016 were not available and no external score is claimed.')
+    head(doc, 'Author contributions (CRediT)', 2); para(doc, 'Zhang Xiaoyuan: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Writing – review and editing, Visualization, Project administration.')
+    head(doc, 'Generative AI use', 2); para(doc, 'OpenAI Codex assisted with manuscript drafting, bilingual expression and polishing, experiment-code development, figure creation, and layout checking. Training, evaluation, and feature-importance values were computed by local Python programs. The author is responsible for all final text, references, code, and results.')
+    head(doc, 'References', 1)
+    refs = ['[1] Draper-Gil et al., Characterization of encrypted and VPN traffic using time-related features, ICISSP, 2016.','[2] Panchenko et al., Website fingerprinting at Internet scale, NDSS, 2016.','[3] Hayes and Danezis, k-fingerprinting: A robust scalable approach to website fingerprinting, USENIX Security, 2018.','[4] Miller et al., I know why you went to the clinic: Risks and realization of HTTPS traffic analysis, PETS, 2014.','[5] AlSabah et al., A statistical analysis of Tor traffic for website fingerprinting, ACM CCS, 2016.','[6] Anderson and McGrew, Machine learning for encrypted malware traffic classification, IEEE MILCOM, 2016.','[7] Anderson and McGrew, Identifying encrypted malware traffic with contextual flow data, AISec, 2016.','[8] Xue et al., Fingerprinting obfuscated proxy traffic with encapsulated TLS handshakes, USENIX Security, 2024.','[9] Zhou et al., NESTTOR: Detecting Tor-over-Proxy traffic with factorized decisions, IEEE TNSM, 2026.','[10] Xi et al., MineShark: Cryptomining traffic detection at scale, NDSS, 2025.','[11] Breiman, Random forests, Machine Learning, 2001.','[12] Cortes and Vapnik, Support-vector networks, Machine Learning, 1995.','[13] Cover and Hart, Nearest neighbor pattern classification, IEEE TIT, 1967.','[14] Pedregosa et al., Scikit-learn: Machine learning in Python, JMLR, 2011.']
+    for r in refs: para(doc, r)
+    doc.save(OUT)
+
+def build_highlights():
+    doc=Document(); doc.add_heading('Highlights',0)
+    for text in ['RF reaches 92.12% on JA4Tor fixed-split with 30 statistical features.','SVM achieves 97.27% on MineShark capture-disjoint windows.','Accuracy drops to 46.66% under NBMiner-to-XMRig workload shift.','External features work in-distribution but remain sensitive to workload changes.','Public data lack complete Shadowsocks/VLESS/Trojan/ordinary-HTTPS labels.']:
+        doc.add_paragraph(text, style='List Bullet')
+    doc.save(HIGHLIGHTS)
+
+def build_ga():
+    im=Image.new('RGB',(1800,1000),'#F5F7FA'); d=ImageDraw.Draw(im); f=ImageFont.truetype('C:/Windows/Fonts/arial.ttf',34); b=ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf',44)
+    d.text((60,45),'Auditable encrypted traffic classification',font=b,fill='#17324D')
+    boxes=[(70,220,430,700,'Public traffic\nJA4Tor + MineShark','#DCEBFA'),(520,220,850,700,'30 statistical\nfeatures\nlength, IAT, direction','#E7F3E5'),(940,220,1260,700,'RF, SVM, KNN\nXGBoost\nfixed preprocessing','#FFF1D6'),(1350,140,1740,390,'Fixed split\nRF 92.12%\nXGB 92.08%','#DDE7F7'),(1350,490,1740,740,'MineShark\nSVM 97.27%\n573 per class','#E2F1E7'),(1350,800,1740,950,'Workload shift\nSVM 46.66%','#F7DFDF')]
+    for x1,y1,x2,y2,t,c in boxes:
+        d.rounded_rectangle((x1,y1,x2,y2),radius=18,fill=c,outline='#55738B',width=3); y=y1+35
+        for line in t.split('\n'): d.text((x1+25,y),line,font=f,fill='#17324D'); y+=58
+    for x1,y1,x2,y2 in [(430,460,520,460),(850,460,940,460),(1260,330,1350,270),(1260,520,1350,620),(1260,600,1350,860)]: d.line((x1,y1,x2,y2),fill='#55738B',width=8)
+    d.text((75,860),'Evidence: hashes | manifests | capture splits | repeated uncertainty',font=f,fill='#17324D'); im.save(GA,dpi=(300,300))
+
+if __name__=='__main__': build_main(); build_highlights(); build_ga()
