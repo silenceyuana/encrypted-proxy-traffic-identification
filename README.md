@@ -1,6 +1,6 @@
 # 基于机器学习的加密代理流量识别
 
-最新论文位于根目录：基于机器学习的加密代理流量识别_修订版.docx。作者 ZhangXiaoyuan，ORCID https://orcid.org/0009-0006-6147-9256。
+最新论文位于根目录：基于机器学习的加密代理流量识别_修订版.docx。作者 张校源（ZhangXiaoyuan），ORCID https://orcid.org/0009-0006-6147-9256。
 
 ## 实验范围
 
