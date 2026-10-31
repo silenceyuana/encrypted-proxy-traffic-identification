@@ -1,0 +1,16 @@
+,ShadowsocksR,Trojan,VMess,model
+ShadowsocksR,715,17,8,RF
+Trojan,1,654,85,RF
+VMess,3,5,732,RF
+ShadowsocksR,713,18,9,SVM
+Trojan,1,708,31,SVM
+VMess,2,10,728,SVM
+ShadowsocksR,695,34,11,KNN
+Trojan,7,647,86,KNN
+VMess,72,75,593,KNN
+ShadowsocksR,698,30,12,LogReg
+Trojan,2,623,115,LogReg
+VMess,60,42,638,LogReg
+ShadowsocksR,730,8,2,HistGB
+Trojan,0,655,85,HistGB
+VMess,3,2,735,HistGB

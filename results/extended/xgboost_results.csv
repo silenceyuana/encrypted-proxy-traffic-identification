@@ -1,0 +1,2 @@
+dataset,model,accuracy,macro_recall,macro_f1,fit_s,predict_s,model_bytes
+JA4Tor_test,XGBoost,0.9208,0.9207999999999998,0.9223935525466738,8.457280800001172,0.09596790000068722,1773589
