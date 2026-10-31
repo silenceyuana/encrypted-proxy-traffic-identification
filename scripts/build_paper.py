@@ -221,7 +221,7 @@ def build():
     para(doc, "加密代理可隐藏应用层内容，但包长、到达间隔及上下行交互仍可观测。本文以公开、可核验的真实流量记录比较随机森林、支持向量机与K近邻三种分类器。JA4Tor公开流级表包含普通非Tor流量、直接Tor以及Tor经Shadowsocks、Trojan、VMess封装五类；在20 000条训练流和5 000条测试流上，仅使用30项长度、时间与方向统计量，随机森林准确率为92.12%，宏平均召回率为92.12%。MineShark公开记录包含ShadowsocksR、Trojan与VMess挖矿流量；在按原始抓包文件隔离的4 743个训练窗口与1 719个测试窗口上，支持向量机准确率为97.27%。当训练与测试的挖矿程序分别变为NBMiner和XMRig时，该值降至46.66%。这说明外在统计特征在给定数据分布内具有识别力，但对业务负载变化敏感。两套公开数据均不含可核验的VLESS与普通HTTPS完整四类标签，因此本文不报告所要求四分类任务的准确率，并给出其严格复现实验条件。")
     para(doc, "关键词：加密代理流量；包长；包间到达时间；随机森林；支持向量机；数据分布变化", first=False)
     heading(doc, "Abstract")
-    para(doc, "Encrypted proxies conceal application payloads while leaving packet length, inter-arrival time and traffic direction observable. This paper evaluates Random Forest, RBF SVM and k-nearest neighbors on two verifiable public traffic artifacts. Using 30 non-payload flow features, Random Forest attains 92.12% accuracy and macro recall on the 5,000-flow JA4Tor test set. On MineShark's ShadowsocksR, Trojan and VMess mining traces, SVM attains 97.27% accuracy under a capture-disjoint split, but only 46.66% when trained on NBMiner and tested on XMRig. These measured results support within-distribution identification while revealing substantial workload sensitivity. Neither artifact provides the complete verified Shadowsocks, VLESS, Trojan and ordinary HTTPS label set, so no four-class accuracy is claimed.")
+    para(doc, "Encrypted proxies conceal payloads but expose packet lengths, timing and direction. JA4Tor Fixed-split Evaluation trains on 20,000 public training flows and tests on 5,000 fixed flows (RF 92.12%; XGBoost 92.08%). Repeated Internal Evaluation resplits the training file into 16,000/4,000 flows for ten runs (RF 87.47% ± 0.39%; XGBoost 87.97% ± 0.44%). MineShark's trace-disjoint evaluation uses 4,743 training and 1,719 test windows; SVM reaches 97.27%, falling to 46.66% under NBMiner-to-XMRig workload shift. JA4Tor capture provenance is unavailable, and no external validation on CIC-Darknet2020 or ISCXVPN2016 was completed because data files were unavailable. Neither source supports the complete four-class target labels.")
     para(doc, "Keywords: encrypted proxy traffic; packet length; inter-arrival time; Random Forest; support vector machine", first=False)
 
     heading(doc, "1 引言")
@@ -234,7 +234,7 @@ def build():
         ["JA4Tor", "NonTor、Tor、Tor-SS、Tor-Trojan、Tor-VMess", "20 000训练流；5 000测试流；另有5 024条test-cross", "无VLESS；NonTor不能确认为纯HTTPS；代理内载荷为Tor"],
         ["MineShark", "ShadowsocksR、Trojan、VMess", "208个原始采集文件；本文提取12 401个60秒窗口", "ShadowsocksR不等于Shadowsocks；无VLESS和HTTPS"],
     ], [2.2, 4.5, 4.2, 4.5])
-    para(doc, "JA4Tor的公开CSV训练集五类各4 000条，测试集各1 000条。本文下载原文件并记录SHA-256；训练输入剔除Flow ID、IP、端口、时间戳、HTTP和TLS字段。公开CSV未提供行到原始抓包的完整关联，因而无法对作者训练/测试划分再次验证抓包级独立性。`test-cross.csv`仅作为作者提供的第二测试文件使用，不推断其采集域与独立性。")
+    para(doc, "JA4Tor的公开CSV训练集五类各4 000条，测试集各1 000条。本文下载原文件并记录SHA-256；训练输入剔除Flow ID、IP、端口、时间戳、HTTP和TLS字段。公开CSV未提供行到原始抓包的完整关联，因而无法验证capture-disjoint；本文不作抓包隔离声明。`test-cross.csv`仅作为作者提供的第二测试文件使用，不推断其采集域与独立性。")
     para(doc, "MineShark归档经发布页MD5校验为6c64268ec35414fc9f483a7a4ed43755。其README明确说明`ssr`为ShadowsocksR，`v2ray`为VMess；每份TSV记录帧时间、帧长、端点和端口。本文从103份ShadowsocksR、41份Trojan、64份VMess记录提取特征，模型输入不含IP、端口、矿池名或采集日期。源工件另含`normal.pcap`，但其中混有大量非HTTPS端口，且没有逐流HTTPS真值标签，故不把它标为普通HTTPS。")
 
     heading(doc, "3 特征与分类方法")
@@ -248,7 +248,7 @@ def build():
     para(doc, "准确率Accuracy=正确预测数/测试样本数。第c类召回率Recallᶜ=TPᶜ/(TPᶜ+FNᶜ)；宏平均召回率是各类别召回率的算术平均。另报告宏平均F1和逐类召回率，以免总体准确率掩盖少数类别失误。本文测试集经过类内等量抽样，因此部分表格中准确率与宏平均召回率相等；这属于指标定义的数学结果，不是两个独立的性能增益。")
 
     heading(doc, "4 实验设计与可复现性")
-    para(doc, "实验一在JA4Tor公开`train.csv`训练，在`test.csv`和`test-cross.csv`分别评估；不重新划分作者发布的数据。实验二先按每个代理类别随机划分原始MineShark采集文件，约70%用于训练、30%用于测试，再在各分区内部按类别等量抽取窗口。这样同一文件内高度相关的窗口不会同时出现在训练和测试中。实验三以NBMiner所采集的全部窗口训练，以XMRig的窗口测试，构造更严格的挖矿业务迁移检验。")
+    para(doc, "实验一分为Fixed-split Evaluation与Repeated Internal Evaluation：前者使用20 000条公开训练流和固定5 000条测试流；后者每次从公开训练文件重新划分16 000/4 000，重复十次。两组均使用同一30项特征和预处理流程，但训练样本量及测试样本来源不同。实验二先按每个代理类别随机划分原始MineShark采集文件，约70%用于训练、30%用于测试，再在各分区内部按类别等量抽取窗口。这样同一文件内高度相关的窗口不会同时出现在训练和测试中。实验三以NBMiner所采集的全部窗口训练，以XMRig的窗口测试，构造更严格的挖矿业务迁移检验。")
     para(doc, "所有原始下载、子集文件、特征矩阵、抓包分区表、预测结果、混淆矩阵、版本和图表均保存在项目根目录。运行脚本可重新计算论文中的每一项数值。MineShark实验评估的是给定挖矿负载和三种实际标签的识别，不能外推为一般网页访问下的四协议识别。")
 
     heading(doc, "5 实验结果")
@@ -267,7 +267,7 @@ def build():
         [x["model"], x["n_train"], x["n_test"], pct(x["accuracy"]), pct(x["macro_recall"]), pct(x["macro_f1"])]
         for x in mm
     ], [3.4, 2.2, 2.2, 2.2, 2.5, 2.2])
-    para(doc, "在4 743个训练窗口和1 719个测试窗口上，SVM最高，准确率与宏平均召回率均为97.27%；RF为94.30%，KNN为92.44%。SVM对ShadowsocksR、Trojan和VMess的召回率分别为98.60%、96.51%和96.68%。与JA4Tor结果不能直接合并排名：样本单位、标签和业务负载均不同。")
+    para(doc, "当前审计工件在4 743个训练窗口和1 719个测试窗口上运行，测试集严格为三类各573个窗口；SVM最高，准确率与宏平均召回率均为97.27%，RF为94.30%，KNN为92.44%。SVM对ShadowsocksR、Trojan和VMess的召回率分别为98.60%、96.51%和96.68%。旧版结果文件results/mineshark/per_class.csv另有三类各740、合计2 220个支持数，但其对应的分区清单和抓包来源在当前工件中不存在，不能与本次1 719窗口实验合并；本文将其视为未能追溯的历史汇总，不报告其指标。与JA4Tor结果不能直接合并排名：样本单位、标签和业务负载均不同。")
     heading(doc, "5.3 业务负载变化检验", 2)
     caption(doc, "表4 NBMiner训练 XMRig测试的迁移结果 单位为百分比")
     table(doc, ["模型", "训练窗口", "测试窗口", "准确率", "宏召回率", "宏F1"], [
@@ -293,7 +293,7 @@ def build():
     para(doc, "未来扩展应在同一环境下对四种目标模式各采集多个独立节点与至少两轮时间段，保存抓包哈希、代理版本与配置、访问任务和方向定义。先按采集轮次与节点划分训练/测试，再进行RF、SVM、KNN比较，报告逐类召回率和混淆矩阵；最后加入未知代理类别和填充/复用配置检验。当前项目脚本与特征定义可作为这一扩展的基线。")
 
     heading(doc, "7 结论")
-    para(doc, "在两个公开真实流量工件上，包长、IAT与上下行统计量足以支持可复跑的传统机器学习比较：JA4Tor五类流量中RF测试准确率为92.12%；MineShark三类代理挖矿流量中SVM按抓包文件隔离的准确率为97.27%。但MineShark跨挖矿程序的SVM准确率仅46.66%，显示强烈的业务迁移风险。现有实测结果支持“外在特征保留识别信号”这一有限结论，尚不足以证明所指定Shadowsocks、VLESS、Trojan、普通HTTPS四分类的性能。")
+    para(doc, "结果显示JA4Tor固定划分与十次内部重划分是两种不同协议：RF分别为92.12%和87.47% ± 0.39%，XGBoost分别为92.08%和87.97% ± 0.44%，不可混用。MineShark当前可追溯的按抓包隔离测试集为1 719窗口、573/类，SVM准确率97.27%，跨挖矿程序测试降至46.66%。JA4Tor抓包来源元数据不足以支持capture-disjoint声明，CIC-Darknet2020及ISCXVPN2016外部验证尚未完成。现有结果不证明目标四分类性能。")
 
     heading(doc, "参考文献")
     refs = [
@@ -305,6 +305,13 @@ def build():
         "[6] Cortes C, Vapnik V. Support-vector networks[J]. Machine Learning, 1995, 20: 273–297. DOI: 10.1007/BF00994018.",
         "[7] Cover T, Hart P. Nearest neighbor pattern classification[J]. IEEE Transactions on Information Theory, 1967, 13(1): 21–27. DOI: 10.1109/TIT.1967.1053964.",
         "[8] Pedregosa F, Varoquaux G, Gramfort A, et al. Scikit-learn: Machine Learning in Python[J]. Journal of Machine Learning Research, 2011, 12: 2825–2830. https://jmlr.org/papers/v12/pedregosa11a.html",
+        "[9] Panchenko A, Lanze F, Zinnen A, et al. Website Fingerprinting at Internet Scale[C]. NDSS, 2016. DOI: 10.14722/ndss.2016.23477.",
+        "[10] Hayes J, Danezis G. k-fingerprinting: A Robust Scalable Approach to Website Fingerprinting[C]. USENIX Security, 2018: 1187–1203.",
+        "[11] Miller B, Huang L, Dyer K P, et al. I Know Why You Went to the Clinic: Risks and Realization of HTTPS Traffic Analysis[C]. PETS, 2014, 2014(1): 143–163. DOI: 10.1515/popets-2014-0012.",
+        "[12] AlSabah M, Briffa J A, et al. A Statistical Analysis of Tor Traffic for Website Fingerprinting[C]. ACM CCS, 2016. DOI: 10.1145/2976749.2989057.",
+        "[13] Anderson B, McGrew D. Machine Learning for Encrypted Malware Traffic Classification[C]. IEEE MILCOM, 2016: 1–6. DOI: 10.1109/MILCOM.2016.7795421.",
+        "[14] Anderson B, McGrew D. Identifying Encrypted Malware Traffic with Contextual Flow Data[C]. Proceedings of the 2016 ACM Workshop on Artificial Intelligence and Security, 2016: 35–46. DOI: 10.1145/2996758.2996760.",
+        "[15] JA3: SSL/TLS Client Fingerprinting. Salesforce Engineering, 2017. 该方法的同行评审基础见 Anderson and McGrew [13,14]；本文不将网页说明作为唯一证据。",
     ]
     for ref in refs:
         para(doc, ref, first=False, after=5)
