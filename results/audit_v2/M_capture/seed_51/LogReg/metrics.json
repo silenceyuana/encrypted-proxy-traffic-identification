@@ -1,0 +1,15 @@
+{
+  "task": "M_capture",
+  "seed": 51,
+  "model": "LogReg",
+  "n_train": 4377,
+  "n_test": 2085,
+  "accuracy": 0.8652278177458034,
+  "macro_precision": 0.8690861107973521,
+  "macro_recall": 0.8652278177458034,
+  "macro_f1": 0.8666860354678562,
+  "fit_s": 0.2525891999976011,
+  "predict_s": 0.0031200000012177043,
+  "predict_us_per_sample": 1.4964028782818726,
+  "model_bytes": 2467
+}

@@ -1,0 +1,15 @@
+{
+  "task": "M_workload",
+  "seed": 49,
+  "model": "XGBoost",
+  "n_train": 3702,
+  "n_test": 1899,
+  "accuracy": 0.41232227488151657,
+  "macro_precision": 0.35901054454122444,
+  "macro_recall": 0.41232227488151657,
+  "macro_f1": 0.3657040890023735,
+  "fit_s": 1.668607500003418,
+  "predict_s": 0.023077600002579857,
+  "predict_us_per_sample": 12.152501317840894,
+  "model_bytes": 549399
+}

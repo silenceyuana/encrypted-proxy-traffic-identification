@@ -1,0 +1,15 @@
+{
+  "task": "M_workload",
+  "seed": 45,
+  "model": "SVM",
+  "n_train": 3702,
+  "n_test": 1899,
+  "accuracy": 0.48393891521853605,
+  "macro_precision": 0.6336281600249992,
+  "macro_recall": 0.48393891521853605,
+  "macro_f1": 0.4480735541260967,
+  "fit_s": 0.12922569999864209,
+  "predict_s": 0.07346550000147545,
+  "predict_us_per_sample": 38.68641390283067,
+  "model_bytes": 52376
+}

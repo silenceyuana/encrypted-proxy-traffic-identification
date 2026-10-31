@@ -1,0 +1,15 @@
+{
+  "task": "M_capture",
+  "seed": 43,
+  "model": "XGBoost",
+  "n_train": 4377,
+  "n_test": 2085,
+  "accuracy": 0.9342925659472422,
+  "macro_precision": 0.9376379278186165,
+  "macro_recall": 0.9342925659472422,
+  "macro_f1": 0.9339150879698992,
+  "fit_s": 2.394740500003536,
+  "predict_s": 0.03318039999794564,
+  "predict_us_per_sample": 15.91386091028568,
+  "model_bytes": 805354
+}

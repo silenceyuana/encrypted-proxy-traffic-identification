@@ -1,0 +1,15 @@
+{
+  "task": "M_workload",
+  "seed": 47,
+  "model": "HistGB",
+  "n_train": 3702,
+  "n_test": 1899,
+  "accuracy": 0.4776197998946814,
+  "macro_precision": 0.4577712513328261,
+  "macro_recall": 0.4776197998946814,
+  "macro_f1": 0.4545696011076481,
+  "fit_s": 3.4289360999973724,
+  "predict_s": 0.04562590000205091,
+  "predict_us_per_sample": 24.02627698896836,
+  "model_bytes": 857053
+}

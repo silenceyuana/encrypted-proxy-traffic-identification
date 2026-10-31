@@ -1,0 +1,15 @@
+{
+  "task": "J_internal",
+  "seed": 47,
+  "model": "SVM",
+  "n_train": 16000,
+  "n_test": 4000,
+  "accuracy": 0.86925,
+  "macro_precision": 0.8937421416496392,
+  "macro_recall": 0.8692499999999999,
+  "macro_f1": 0.8723138289024239,
+  "fit_s": 6.2489626000024145,
+  "predict_s": 3.3306314000001294,
+  "predict_us_per_sample": 832.6578500000323,
+  "model_bytes": 1415050
+}

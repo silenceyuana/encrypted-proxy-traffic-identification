@@ -1,0 +1,15 @@
+{
+  "task": "M_workload",
+  "seed": 47,
+  "model": "RF",
+  "n_train": 3702,
+  "n_test": 1899,
+  "accuracy": 0.4934175882043181,
+  "macro_precision": 0.5237068524291865,
+  "macro_recall": 0.4934175882043181,
+  "macro_f1": 0.4997678267930408,
+  "fit_s": 1.7630086000026495,
+  "predict_s": 0.05124739999882877,
+  "predict_us_per_sample": 26.98651922002568,
+  "model_bytes": 1998864
+}

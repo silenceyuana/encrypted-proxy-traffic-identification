@@ -1,0 +1,15 @@
+{
+  "task": "M_capture",
+  "seed": 44,
+  "model": "HistGB",
+  "n_train": 4296,
+  "n_test": 2166,
+  "accuracy": 0.9321329639889196,
+  "macro_precision": 0.9397827165160924,
+  "macro_recall": 0.9321329639889196,
+  "macro_f1": 0.9317259775508592,
+  "fit_s": 3.886798600000475,
+  "predict_s": 0.05180539999855682,
+  "predict_us_per_sample": 23.91754385898284,
+  "model_bytes": 1031282
+}

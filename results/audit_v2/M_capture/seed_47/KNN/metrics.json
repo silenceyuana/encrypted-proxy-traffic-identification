@@ -1,0 +1,15 @@
+{
+  "task": "M_capture",
+  "seed": 47,
+  "model": "KNN",
+  "n_train": 5130,
+  "n_test": 1332,
+  "accuracy": 0.9181681681681682,
+  "macro_precision": 0.924773934829847,
+  "macro_recall": 0.9181681681681683,
+  "macro_f1": 0.9174441373246941,
+  "fit_s": 0.021155499998712912,
+  "predict_s": 0.023262300001078984,
+  "predict_us_per_sample": 17.464189189999235,
+  "model_bytes": 863799
+}

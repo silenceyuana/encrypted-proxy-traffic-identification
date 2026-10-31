@@ -1,0 +1,4 @@
+seed,label,train_captures,test_captures,candidate_train,candidate_test,selected_train,selected_test,unused_train,unused_test
+42,ShadowsocksR,72,31,4532,1795,1581,573,2951,1222
+42,Trojan,29,12,1581,573,1581,573,0,0
+42,VMess,45,19,2780,1140,1581,573,1199,567

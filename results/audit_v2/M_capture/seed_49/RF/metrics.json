@@ -1,0 +1,15 @@
+{
+  "task": "M_capture",
+  "seed": 49,
+  "model": "RF",
+  "n_train": 4737,
+  "n_test": 1725,
+  "accuracy": 0.975072463768116,
+  "macro_precision": 0.9753749375992201,
+  "macro_recall": 0.975072463768116,
+  "macro_f1": 0.9749879443896866,
+  "fit_s": 2.8324614000011934,
+  "predict_s": 0.049446099998021964,
+  "predict_us_per_sample": 28.664405795954764,
+  "model_bytes": 4190251
+}

@@ -1,0 +1,15 @@
+{
+  "task": "M_capture",
+  "seed": 44,
+  "model": "SVM",
+  "n_train": 4296,
+  "n_test": 2166,
+  "accuracy": 0.9270544783010157,
+  "macro_precision": 0.9276589709228796,
+  "macro_recall": 0.9270544783010157,
+  "macro_f1": 0.9271753896224847,
+  "fit_s": 0.17481869999755872,
+  "predict_s": 0.14725610000095912,
+  "predict_us_per_sample": 67.98527239194789,
+  "model_bytes": 94505
+}

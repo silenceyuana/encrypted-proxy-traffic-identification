@@ -1,0 +1,15 @@
+{
+  "task": "J_internal",
+  "seed": 50,
+  "model": "RF",
+  "n_train": 16000,
+  "n_test": 4000,
+  "accuracy": 0.8755,
+  "macro_precision": 0.88523069790437,
+  "macro_recall": 0.8755000000000001,
+  "macro_f1": 0.878552798966434,
+  "fit_s": 7.845283099999506,
+  "predict_s": 0.12163399999917601,
+  "predict_us_per_sample": 30.408499999794003,
+  "model_bytes": 18079442
+}

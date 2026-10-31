@@ -1,0 +1,15 @@
+{
+  "task": "M_workload",
+  "seed": 45,
+  "model": "KNN",
+  "n_train": 3702,
+  "n_test": 1899,
+  "accuracy": 0.5634544497103738,
+  "macro_precision": 0.6034012626549085,
+  "macro_recall": 0.5634544497103738,
+  "macro_f1": 0.559129710871967,
+  "fit_s": 0.01733599999715807,
+  "predict_s": 0.027363999997760402,
+  "predict_us_per_sample": 14.409689308983888,
+  "model_bytes": 623895
+}

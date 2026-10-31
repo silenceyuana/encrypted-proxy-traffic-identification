@@ -1,0 +1,15 @@
+{
+  "task": "J_internal",
+  "seed": 43,
+  "model": "HistGB",
+  "n_train": 16000,
+  "n_test": 4000,
+  "accuracy": 0.87,
+  "macro_precision": 0.885409932302563,
+  "macro_recall": 0.8699999999999999,
+  "macro_f1": 0.8738793185399112,
+  "fit_s": 7.952461299999413,
+  "predict_s": 0.0583799000014551,
+  "predict_us_per_sample": 14.594975000363775,
+  "model_bytes": 1080360
+}

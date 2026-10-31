@@ -1,0 +1,15 @@
+{
+  "task": "J_internal",
+  "seed": 48,
+  "model": "LogReg",
+  "n_train": 16000,
+  "n_test": 4000,
+  "accuracy": 0.81275,
+  "macro_precision": 0.8308828238816812,
+  "macro_recall": 0.8127500000000001,
+  "macro_f1": 0.8130957598992008,
+  "fit_s": 1.986876700000721,
+  "predict_s": 0.0032492999998794403,
+  "predict_us_per_sample": 0.8123249999698601,
+  "model_bytes": 3539
+}

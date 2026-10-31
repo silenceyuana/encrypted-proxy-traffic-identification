@@ -1,0 +1,6 @@
+,NonTor,Tor,Tor-SS,Tor-Trojan,Tor-VMess
+NonTor,789,0,7,3,1
+Tor,1,745,54,0,0
+Tor-SS,0,1,736,9,54
+Tor-Trojan,14,0,109,659,18
+Tor-VMess,6,0,252,8,534

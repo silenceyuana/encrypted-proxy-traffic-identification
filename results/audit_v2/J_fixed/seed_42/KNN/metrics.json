@@ -1,0 +1,15 @@
+{
+  "task": "J_fixed",
+  "seed": 42,
+  "model": "KNN",
+  "n_train": 20000,
+  "n_test": 5000,
+  "accuracy": 0.8824,
+  "macro_precision": 0.8959360006577469,
+  "macro_recall": 0.8824,
+  "macro_f1": 0.8820813493949459,
+  "fit_s": 0.09186620000036783,
+  "predict_s": 0.23284680000142544,
+  "predict_us_per_sample": 46.56936000028509,
+  "model_bytes": 4962304
+}
