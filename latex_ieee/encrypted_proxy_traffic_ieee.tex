@@ -109,12 +109,12 @@ KNN & 4743 & 1719 & 92.44 & 92.44 & 92.43\\
 \end{table}
 
 SVM recalls for ShadowsocksR, Trojan, and VMess are 98.60\%, 96.51\%, and 96.68\%. Comparisons with JA4Tor must account for different labels, units, and workloads. The JA4Tor per-class matrix shows that Tor-SS is the hardest class: RF recalls 88.60\% of Tor-SS flows, while 11.30\% are predicted as Tor-VMess. Tor-VMess has the reciprocal confusion pattern, with 16.10\% predicted as Tor-SS. These errors are consistent with a shared encrypted transport and similar directional burst statistics; they are evidence of class overlap rather than a simple implementation bug.
-\subsection{Why Performance Degrades Under Domain Change}
+\subsection{Domain-shift observation}
 The capture-disjoint MineShark result remains high because the label semantics and workload family are held fixed while the capture identity changes. The workload-shift experiment changes the mining software between training and testing. Under this change, RF, SVM, and KNN fall to 44.81\%, 46.66\%, and 55.34\% accuracy. The largest drop is for SVM, whose flexible margin can exploit stable but domain-specific combinations of IAT and frame-length statistics. KNN is less accurate in-domain but degrades less in this fixed transfer, suggesting that local neighborhoods preserve some coarse traffic structure while the precise boundary changes.
 
 This degradation has practical meaning. A detector trained on one client, pool, or workload should not be presented as a protocol detector without an external-domain test. In deployment, a change of miner version, transport library, packet offload behavior, or capture path can move samples across the learned boundary. Calibration, periodic retraining, and a reject or unknown class are therefore more defensible than treating the reported in-domain accuracy as a universal guarantee.
 
-\subsection{Workload Shift}
+\subsection{Workload-shift results}
 When NBMiner captures are used for training and XMRig captures for testing, RF, SVM, and KNN obtain 44.81\%, 46.66\%, and 55.34\% accuracy, respectively. This experiment uses 3,702 training and 1,899 test windows. RF, SVM, and KNN macro F1 are 46.08\%, 42.87\%, and 54.55\%, respectively. SVM loses 50.61 percentage points relative to capture-disjoint evaluation. KNN superiority is limited to this fixed setting. This degradation indicates that workload and capture conditions can dominate the apparent decision boundary.
 \begin{figure}[t]
 \centering
