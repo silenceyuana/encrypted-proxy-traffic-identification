@@ -122,7 +122,7 @@ The results support statistical flow classification as a useful baseline, but th
 
 Proxy and application behavior, network path, server, capture year, client implementation, and TLS transport can confound statistical fingerprints~\cite{xue}. Future four-class evaluation should use matched browsing tasks, multiple independent nodes and capture rounds, saved PCAP hashes and protocol configurations, and node/run-disjoint partitions. Unknown proxies and padding/multiplexing should also be tested.
 \section{Conclusion}
-We presented an IEEE-style, reproducible pipeline for encrypted proxy traffic classification using 30 flow statistics and three classical classifiers. RF performs strongly on the original JA4Tor split, SVM performs best on the capture-disjoint three-class MineShark mining-trace split, and all methods degrade under workload shift. Feature ranking and explicit label auditing improve interpretability and prevent overclaiming.
+We presented a reproducible pipeline for encrypted proxy traffic classification using 30 flow statistics and three classical classifiers. RF performs strongly on the original JA4Tor split, SVM performs best on the source-capture-disjoint three-class MineShark mining-trace split, and all methods degrade under workload shift. Feature ranking and explicit label auditing improve interpretability and prevent overclaiming.
 
 \section{Code and Data Availability}
 Scripts, result files, figures, metadata, and the editable paper source are available at:\newline

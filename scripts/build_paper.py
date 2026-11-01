@@ -355,7 +355,7 @@ def build():
 
     heading(doc, "参考文献")
     refs = [
-        "[1] Drapper Gil G, Lashkari A H, Mamun M, et al. Characterization of Encrypted and VPN Traffic Using Time-Related Features[C]. ICISSP, 2016: 407–414. 数据说明：https://www.unb.ca/cic/datasets/vpn.html",
+        "[1] Draper-Gil G, Lashkari A H, Mamun M, et al. Characterization of Encrypted and VPN Traffic Using Time-Related Features[C]. ICISSP, 2016: 407–414. Available: https://www.unb.ca/cic/datasets/vpn.html",
         "[2] Xue D, Kallitsis M, Houmansadr A, et al. Fingerprinting Obfuscated Proxy Traffic with Encapsulated TLS Handshakes[C]. 33rd USENIX Security Symposium, 2024. https://www.usenix.org/conference/usenixsecurity24/presentation/xue-fingerprinting",
         "[3] Zhou C, Huang C, Zhang Q, et al. NESTTOR: Detecting Tor-over-Proxy Traffic with Factorized Decisions[J]. IEEE Transactions on Network and Service Management, 2026. DOI: 10.1109/TNSM.2026.3743261. 数据：https://github.com/das-lab/JA4Tor",
         "[4] Xi S, Fu T, Bu K, et al. MineShark: Cryptomining Traffic Detection at Scale[C]. NDSS, 2025. DOI: 10.14722/ndss.2025.230402. 工件：https://zenodo.org/records/13624058",
@@ -369,7 +369,7 @@ def build():
         "[12] AlSabah M, Briffa J A, et al. A Statistical Analysis of Tor Traffic for Website Fingerprinting[C]. ACM CCS, 2016. DOI: 10.1145/2976749.2989057.",
         "[13] Anderson B, McGrew D. Machine Learning for Encrypted Malware Traffic Classification[C]. IEEE MILCOM, 2016: 1–6. DOI: 10.1109/MILCOM.2016.7795421.",
         "[14] Anderson B, McGrew D. Identifying Encrypted Malware Traffic with Contextual Flow Data[C]. Proceedings of the 2016 ACM Workshop on Artificial Intelligence and Security, 2016: 35–46. DOI: 10.1145/2996758.2996760.",
-        "[15] JA3: SSL/TLS Client Fingerprinting. Salesforce Engineering, 2017. 该方法的同行评审基础见 Anderson and McGrew [13,14]；本文不将网页说明作为唯一证据。",
+        "[15] JA3: SSL/TLS Client Fingerprinting. Salesforce Engineering, 2017. Peer-reviewed context: Anderson and McGrew [13,14]; this web description is not used as the sole evidence.",
     ]
     for ref in refs:
         para(doc, ref, first=False, after=5)
