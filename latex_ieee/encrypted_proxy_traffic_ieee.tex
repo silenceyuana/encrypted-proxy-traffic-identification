@@ -20,7 +20,7 @@ encrypted traffic, proxy detection, machine learning, network flows, reproducibi
 \section{Introduction}
 Encrypted tunnels protect content but also limit conventional payload-based inspection. Statistical flow features offer a practical alternative for traffic classification, yet reported accuracy can be inflated by random row splits, duplicated captures, or ambiguous labels. This study focuses on an auditable baseline for encrypted proxy traffic identification and explicitly separates task-specific performance from capture-disjoint and workload-shift evaluation.
 
-\section{Research Questions and Contributions}
+
 This study addresses four questions: how algorithms compare on the same encrypted-traffic task; whether performance remains stable on independent capture records; how much accuracy declines when the workload changes; and which observable features contribute most. We retain source-specific labels and do not merge incompatible datasets. The contributions are an auditable six-model comparison, explicit separation of Fixed-split and Repeated Internal Evaluation, source-capture grouping for MineShark, workload-shift measurement, per-class and resource metrics, and a label-preserving external-validation protocol. The 50.61-point SVM loss under NBMiner-to-XMRig transfer is operationally meaningful for monitoring points and edge nodes: a detector should declare its domain, retrain or recalibrate after domain change, and support an unknown or reject class. Because CIC-Darknet2020 and ISCXVPN2016 files are not present, no unexecuted external score is reported.
 
 \section{Related Work}
@@ -60,10 +60,10 @@ The JA4Tor fixed-file experiment preserves the supplied evaluation files so that
 \subsection{Hyperparameters and Runtime Environment}
 The runtime is Python 3.12 with scikit-learn 1.9.1 and XGBoost 3.4.1. RF uses 200 trees, square-root feature sampling, minimum leaf size 2, and seed 42; the RBF SVM uses $C=10$ and gamma=scale; KNN uses $k=7$; Logistic Regression uses $C=1$ and a 2,000-iteration limit; HistGradientBoosting uses 150 iterations and 31 leaves; and XGBoost uses 150 histogram trees, depth 6, learning rate 0.1, and subsampling 0.9. These settings were fixed before the reported test evaluations. Median imputation and standardization are fitted only on training data.
 
-\section{Experimental Design and Reproducibility}
+
 For JA4Tor, we report the original test split and the separately published second test file. For MineShark, the primary split is capture-disjoint: training and test captures do not overlap. We report accuracy, macro recall, and macro F1. All saved predictions were re-evaluated independently, and the resulting metrics matched the stored CSV values. JA4Tor input hashes and the MineShark archive checksum are recorded in the repository metadata.
 
-\section{Results and Discussion}
+\section{Results}
 \subsection{JA4Tor: Fixed Files and Internal Repetition}
 Table~\ref{tab:ja4tor} summarizes the baseline and second-test-file results. RF recall is 88.60\% for Tor-SS and 93.40\% for Tor-Trojan. Differences on the second file cannot be directly attributed to cross-node or cross-time generalization without capture-level provenance.
 \begin{table}[t]
@@ -232,24 +232,12 @@ The feature set is intentionally compact and metadata-free. It omits payload seq
 The external datasets proposed in this paper have not yet been executed in the current workspace. Their inclusion is a protocol and acquisition plan, not an unverified result. A complete follow-up must obtain the legal files, preserve checksums, implement compatible feature extraction, verify capture grouping, and run the source-specific tasks before adding any numerical table.
 
 \section{Conclusion}
-The results support statistical flow classification as a useful baseline, but the evidence is bounded by the available data. First, the public sources do not provide complete and consistent labels for all proxy families requested in a four-class taxonomy: there is no VLESS class, and NonTor is not ordinary-HTTPS ground truth. Second, MineShark has an imbalanced capture inventory and many overlapping candidate windows; balancing changes the effective sample size and can increase variance when only a few captures represent a class. Third, capture conditions, client implementations, network paths, TLS libraries, packet offload, and acquisition dates are not fully crossed, so the experiments cannot isolate each causal factor.
-
-The workload-shift study changes NBMiner to XMRig but does not span all miner versions, pool protocols, operating systems, or network environments. Similarly, the JA4Tor second test file lacks complete capture provenance, so its lower accuracy is evidence of distribution difference but not a clean estimate of time or node generalization. Finally, the feature set is intentionally low-dimensional and metadata-free; it may miss useful sequence information, and permutation importance is associative rather than causal. Future work should use matched tasks across multiple nodes and dates, preserve PCAP hashes and protocol configurations, add unknown-class and calibration analysis, and evaluate padding, multiplexing, and adversarial traffic shaping.
-
-Proxy and application behavior, network path, server, capture year, client implementation, and TLS transport can confound statistical fingerprints~\cite{xue}. Future four-class evaluation should use matched browsing tasks, multiple independent nodes and capture rounds, saved PCAP hashes and protocol configurations, and node/run-disjoint partitions. Unknown proxies and padding/multiplexing should also be tested.
-\section{Generalization Analysis}
-The evaluation regimes answer different questions. Fixed-file JA4Tor measures benchmark compatibility; repeated sampling measures sensitivity to the selected records; capture-disjoint MineShark tests transfer across source captures; and NBMiner-to-XMRig tests transfer across workloads. These numbers should not be collapsed into one leaderboard. The principal finding is that distribution change is a larger uncertainty source than the small ranking differences among several strong models.
-
-CIC-Darknet2020 and ISCXVPN2016 are planned as independent, label-preserving validation tasks. CIC-Darknet2020 will retain its Tor/non-Tor and VPN/non-VPN semantics; ISCXVPN2016 will be evaluated as VPN versus non-VPN, optionally stratified by application. Neither task will be interpreted as Shadowsocks, VLESS, Trojan, or ordinary-HTTPS protocol identification. Cross-dataset transfer will run only when the common label meaning and feature definitions are compatible. Feature extraction, imputation, scaling, and selection will be fitted on the source training partition only. Until legal data files and capture-level provenance are available, these are protocols rather than results.
-
-Under workload change, per-class recall is more informative than accuracy alone. A class-specific decline indicates a shift in its burst or direction distribution; a simultaneous decline across classes indicates a global feature-space shift. The current NBMiner-to-XMRig evidence supports the latter possibility but does not establish a universal law for all miners or networks.
-\section{Conclusion}
 We present an auditable network-monitoring pipeline for encrypted proxy traffic classification using 30 flow statistics and an extended comparison of classical models. The contribution is the explicit separation of evaluation conditions that are often mixed in existing reports: fixed-file compatibility, repeated internal resampling, source-capture grouping, and workload transfer. RF and XGBoost reach 92.12% and 92.08% on the JA4Tor fixed split, but 87.47% plus or minus 0.39% and 87.97% plus or minus 0.44% under repeated internal evaluation. SVM reaches 97.27% on the current MineShark source-capture-disjoint split and falls to 46.66% under NBMiner-to-XMRig transfer, a 50.61 percentage-point loss that is operationally meaningful for monitoring-point and edge-node alerts. The fixed result cannot be treated as universal protocol recognition: the detector should declare its domain, retrain or recalibrate after workload change, and support an unknown or reject class. Feature importance remains associative rather than causal.
 
 The study therefore supports a reproducible statistical baseline, not a universal protocol oracle. The central practical lesson is that a detector should declare its capture and workload domain, preserve capture-level separation, and be evaluated under distribution change before deployment. CIC-Darknet2020 and ISCXVPN2016 offer useful external-validation opportunities only when their original label semantics are preserved. They cannot replace a newly collected four-class dataset containing verified Shadowsocks, VLESS, Trojan, and ordinary HTTPS traffic. Future work should complete the external acquisition audit, add grouped uncertainty over captures, test multiple workload pairs, and evaluate calibration, abstention, padding, and multiplexing.
 
 \section{Code and Data Availability}
-Scripts, result files, figures, metadata, and the editable paper source are available at:\newline
+Scripts, result files, figures, metadata, and the editable paper source are available at https://github.com/silenceyuana/encrypted-proxy-traffic-identification.
 \url{https://github.com/silenceyuana/encrypted-proxy-traffic-identification}.
 
 \section{Generative AI Usage Disclosure}
