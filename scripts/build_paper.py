@@ -218,15 +218,15 @@ def build():
     set_font(date.add_run("2026年10月"), size=9)
 
     heading(doc, "摘  要")
-    para(doc, "加密代理可隐藏应用层内容，但包长、到达间隔及上下行交互仍可观测。本文以公开、可核验的真实流量记录比较随机森林、支持向量机与K近邻三种分类器。JA4Tor公开流级表包含普通非Tor流量、直接Tor以及Tor经Shadowsocks、Trojan、VMess封装五类；在20 000条训练流和5 000条测试流上，仅使用30项长度、时间与方向统计量，随机森林准确率为92.12%，宏平均召回率为92.12%。MineShark公开记录包含ShadowsocksR、Trojan与VMess挖矿流量；在按原始抓包文件隔离的4 743个训练窗口与1 719个测试窗口上，支持向量机准确率为97.27%。当训练与测试的挖矿程序分别变为NBMiner和XMRig时，该值降至46.66%。这说明外在统计特征在给定数据分布内具有识别力，但对业务负载变化敏感。两套公开数据均不含可核验的VLESS与普通HTTPS完整四类标签，因此本文不报告所要求四分类任务的准确率，并给出其严格复现实验条件。")
+    para(doc, "加密代理可隐藏应用层内容，但包长、到达间隔及上下行交互仍可观测。现有加密流量研究通常报告随机行划分或固定文件上的高准确率，却较少同时核对抓包级泄漏、重复划分的样本来源、负载变化和标签缺失。本文的改进不在于宣称一种传统模型获得普遍最高分，而在于把这些容易混淆的评估条件拆开并提供可复核的证据链：JA4Tor使用20 000条公开训练流和5 000条固定测试流，RF准确率为92.12%；同一公开训练文件重新划分并重复十次时，RF为87.47% ± 0.39%，XGBoost为87.97% ± 0.44%。MineShark按原始抓包文件隔离，使用4 743个训练窗口和1 719个测试窗口（573/类），SVM准确率为97.27%；从NBMiner迁移到XMRig后降至46.66%。因此，本文具体解决了三个问题：说明两组JA4Tor准确率为何不能混为一个结果，确认MineShark的1 719与历史2 220窗口属于不同划分，并量化业务负载变化对外在特征分类的影响。两套公开数据均不含可核验的VLESS与普通HTTPS完整四类标签，因此本文不报告目标四分类准确率。")
     para(doc, "关键词：加密代理流量；包长；包间到达时间；随机森林；支持向量机；数据分布变化", first=False)
     heading(doc, "Abstract")
     para(doc, "Encrypted proxies conceal payloads but expose packet lengths, timing and direction. JA4Tor Fixed-split Evaluation trains on 20,000 public training flows and tests on 5,000 fixed flows (RF 92.12%; XGBoost 92.08%). Repeated Internal Evaluation resplits the training file into 16,000/4,000 flows for ten runs (RF 87.47% ± 0.39%; XGBoost 87.97% ± 0.44%). MineShark's trace-disjoint evaluation uses 4,743 training and 1,719 test windows; SVM reaches 97.27%, falling to 46.66% under NBMiner-to-XMRig workload shift. JA4Tor capture provenance is unavailable, and no external validation on CIC-Darknet2020 or ISCXVPN2016 was completed because data files were unavailable. Neither source supports the complete four-class target labels.")
     para(doc, "Keywords: encrypted proxy traffic; packet length; inter-arrival time; Random Forest; support vector machine", first=False)
 
     heading(doc, "1 引言")
-    para(doc, "Shadowsocks、VLESS与Trojan通过不同的封装和加密机制转发业务流量。被动观察者通常不能读取加密载荷，却仍能看到链路上帧或数据包的大小、发送方向与时间序列。已有研究表明，这类可见元数据能够形成加密流量指纹，但隧道封装、填充、复用和业务内容会同时改变指纹[2]。因此，问题不只是模型能否在某个数据集取得高分，还包括分数究竟反映协议、应用业务还是采集环境。")
-    para(doc, "本文的目标是建立可复跑的传统机器学习基线，比较随机森林（RF）、径向基核支持向量机（SVM）与K近邻（KNN）对外在特征的利用，并检验负载迁移后性能是否保持。用户希望的目标标签是Shadowsocks、VLESS、Trojan和普通HTTPS。由于公开数据标签与该目标并非完全一致，本文将实测任务与目标任务清楚区分：所有数值只对应数据源原有标签，不通过重命名补齐缺失类别。")
+    para(doc, "Shadowsocks、VLESS与Trojan通过不同的封装和加密机制转发业务流量。被动观察者通常不能读取加密载荷，却仍能看到链路上帧或数据包的大小、发送方向与时间序列。已有研究表明，这类可见元数据能够形成加密流量指纹，但隧道封装、填充、复用和业务内容会同时改变指纹[2]。现有工作的具体不足是：固定测试集结果、内部重划分结果和抓包隔离结果常被放在同一张表中；历史结果的样本数变化不一定被追溯；高准确率也常缺少负载迁移检验。这样读者无法判断模型识别的是协议、应用业务还是采集环境。")
+    para(doc, "本文针对上述问题提出一个可复跑的审计式基线。第一，使用Fixed-split Evaluation和Repeated Internal Evaluation两个明确名称，分别报告训练规模、测试来源和同一套预处理流程。第二，以MineShark的抓包文件为分组单位，在窗口抽样前完成划分，并把1 719个当前测试窗口与旧版2 220个历史支持数分开。第三，增加NBMiner到XMRig的工作负载迁移检验，直接测量外在特征在业务变化下的失效程度。第四，保留源标签并核对VLESS、普通HTTPS和JA4Tor抓包来源是否真的存在。本文的目标标签仍是Shadowsocks、VLESS、Trojan和普通HTTPS，但所有实测数值只对应数据源原有标签，不通过重命名补齐缺失类别。")
     heading(doc, "2 数据来源与标签审计")
     para(doc, "首先核对了ISCXVPN2016官方说明。该数据集提供OpenVPN与非VPN流量及浏览、聊天、文件传输等应用类别，确实适合VPN识别研究，但不能据此推断Shadowsocks、VLESS或Trojan的逐协议标签[1]。本文最终采用两套包含真实采集记录且可直接下载的研究工件：NESTTOR/JA4Tor发布的流级CSV[3]，以及MineShark在Zenodo发布的抓包派生记录[4]。两者所研究的业务与协议不同，实验不混合训练。")
     caption(doc, "表1 公开数据与目标标签的对应关系")
