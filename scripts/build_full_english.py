@@ -89,6 +89,17 @@ def main():
     add_table(doc,['Model','Training windows','Test windows','Accuracy','Macro recall','Macro F1'],[
         ['Random Forest','3,702','1,899','44.81','44.81','46.08'],['SVM RBF','3,702','1,899','46.66','46.66','42.87'],['KNN k=7','3,702','1,899','55.34','55.34','54.55']])
     para(doc,'The tables preserve the complete editable data from the Chinese source document. The fixed JA4Tor table, the MineShark 1,719-window table, and the workload-shift table are separate experiments and must not be merged into one leaderboard. The historical 2,220-support summary is discussed in the text because it belongs to an earlier experiment version and has no matching current capture-split table.')
+    head(doc,'Figures',1)
+    figures=[
+        (ROOT/'results/figures/methodology.png','Figure 1. Data processing and classifier evaluation pipeline.'),
+        (ROOT/'results/ja4tor/accuracy_recall.png','Figure 2. JA4Tor accuracy and macro recall.'),
+        (ROOT/'results/mineshark/workload_shift_comparison.png','Figure 3. MineShark in-distribution and workload-shift performance.'),
+        (ROOT/'results/ja4tor/feature_importance.png','Figure 4. Random Forest feature-importance ranking.'),
+    ]
+    for image_path, caption in figures:
+        if image_path.exists():
+            pic=doc.add_paragraph(); pic.alignment=WD_ALIGN_PARAGRAPH.CENTER; pic.add_run().add_picture(str(image_path), width=Inches(6.2))
+            cap=doc.add_paragraph(); cap.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(cap.add_run(caption),9)
     para(doc,'Figure 1. Data processing and classifier evaluation pipeline. Figure 2. JA4Tor accuracy and macro recall. Figure 3. MineShark workload-shift performance. Figure 4. Random Forest feature-importance ranking. High-resolution editable figure files are supplied separately in submission_assets/figures.')
     head(doc,'Declarations',1)
     head(doc,'Competing interests',2); para(doc,'The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.')
