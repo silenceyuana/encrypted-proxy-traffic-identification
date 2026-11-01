@@ -245,6 +245,7 @@ def build():
     para(doc, "JA4Tor使用原始CSV中30项长度、时间和方向统计量：双向包数与字节数、正反向包长均值及离散程度、整流及单方向IAT均值和极值、流持续时间、下行与上行比例等。MineShark以每份采集文件内非重叠60秒窗口为样本，保留至少12帧的窗口，计算20项特征，包括帧长均值、标准差、中位数与90分位数，IAT均值、标准差与90分位数，上行帧占比、下行/上行字节比和方向切换率。设相邻包到达时间为tᵢ，则IATᵢ=tᵢ−tᵢ₋₁；设下行与上行字节量分别为B↓、B↑，比例为B↓/max(B↑,1)。全部特征仅来自外在元数据。")
     para(doc, "MineShark的`frame.len`是链路帧长度，可能包含链路层开销和网卡卸载造成的大于常见MTU的记录；本文未将其称为纯TCP载荷长度。方向由私网客户端地址推定，但地址值只在预处理阶段使用，没有输入分类器。")
     heading(doc, "3.2 模型与评价指标", 2)
+    para(doc, "模型角色预先固定：随机森林、RBF支持向量机和KNN是正文主比较模型，构成MineShark的三模型主表；逻辑回归、HistGradientBoosting和XGBoost属于补充基线，记录在扩展结果中。XGBoost同时保留在JA4Tor核心比较中，以便与RF进行独立的提升树对照。")
     para(doc, "RF采用200棵树、平方根特征采样与最小叶节点2；SVM采用RBF核、C=10；KNN取k=7。缺失值填补在训练折拟合，SVM和KNN再在训练折进行标准化。三种模型使用相同特征与相同测试样本，随机种子固定为42，未针对测试集调参。RF、SVM和KNN分别代表集成树、非线性间隔学习和距离学习，便于观察外在特征的模型敏感性[5–8]。")
     para(doc, "准确率Accuracy=正确预测数/测试样本数。第c类召回率Recallᶜ=TPᶜ/(TPᶜ+FNᶜ)；宏平均召回率是各类别召回率的算术平均。另报告宏平均F1和逐类召回率，以免总体准确率掩盖少数类别失误。本文测试集经过类内等量抽样，因此部分表格中准确率与宏平均召回率相等；这属于指标定义的数学结果，不是两个独立的性能增益。")
 
@@ -268,7 +269,6 @@ def build():
 
     heading(doc, "5 实验结果")
     heading(doc, "5.1 JA4Tor流级基线", 2)
-    para(doc, "表2回答固定公开测试文件上的基线性能是多少，以及第二公开测试文件是否保持相同排序；它只比较同一标签体系下的文件结果，不把内部重复实验混入固定测试集。", first=False)
     caption(doc, "表2 JA4Tor五类流量分类结果 单位为百分比")
     table(doc, ["测试文件", "模型", "准确率", "宏召回率", "宏F1"], [
         ["test.csv" if x["dataset"] == "test.csv" else "test-cross.csv", x["model"], pct(x["accuracy"]), pct(x["macro_recall"]), pct(x["macro_f1"])]
@@ -280,7 +280,6 @@ def build():
     para(doc, "在`test.csv`上，RF达到92.12%的准确率，高于SVM的89.72%和KNN的88.24%。RF对Tor-SS和Tor-Trojan的召回率分别为88.60%和93.40%，反映两类代理封装流量的可区分性并不一致。换用`test-cross.csv`后，RF准确率降到87.54%，SVM降到76.73%，KNN降到79.40%。由于公开工件缺少抓包级对应关系，这一变化只能被视为第二测试文件上的性能差异，不能直接归因为跨节点或跨时间泛化。")
 
     heading(doc, "5.2 MineShark抓包文件隔离评估", 2)
-    para(doc, "表3回答在不让同一原始抓包跨越训练和测试时，三类MineShark窗口能达到什么性能；训练窗口、测试窗口和每类573支持数同时给出，用于核对混淆矩阵的分母。", first=False)
     caption(doc, "表3 MineShark三类代理抓包窗口分类结果 单位为百分比")
     table(doc, ["模型", "训练窗口", "测试窗口", "准确率", "宏召回率", "宏F1"], [
         [x["model"], x["n_train"], x["n_test"], pct(x["accuracy"]), pct(x["macro_recall"]), pct(x["macro_f1"])]
@@ -288,7 +287,7 @@ def build():
     ], [3.4, 2.2, 2.2, 2.2, 2.5, 2.2])
     para(doc, "当前审计工件在4 743个训练窗口和1 719个测试窗口上运行，测试集严格为三类各573个窗口；SVM最高，准确率与宏平均召回率均为97.27%，RF为94.30%，KNN为92.44%。SVM对ShadowsocksR、Trojan和VMess的召回率分别为98.60%、96.51%和96.68%。旧版结果文件results/mineshark/per_class.csv另有三类各740、合计2 220个支持数，但其对应的分区清单和抓包来源在当前工件中不存在，不能与本次1 719窗口实验合并；本文将其视为未能追溯的历史汇总，不报告其指标。与JA4Tor结果不能直接合并排名：样本单位、标签和业务负载均不同。")
     heading(doc, "5.3 业务负载变化检验", 2)
-    para(doc, "表4回答模型是否依赖具体挖矿程序：它保持代理类别不变，只把训练域从NBMiner换成XMRig测试域，因此性能下降可以解释为工作负载迁移压力，而不是新增类别。", first=False)
+    para(doc, "表4仅报告NBMiner训练到XMRig测试的准确率变化；工作负载变化的机制和部署含义集中在第6节讨论。", first=False)
     caption(doc, "表4 NBMiner训练 XMRig测试的迁移结果 单位为百分比")
     table(doc, ["模型", "训练窗口", "测试窗口", "准确率", "宏召回率", "宏F1"], [
         [x["model"], x["n_train"], x["n_test"], pct(x["accuracy"]), pct(x["macro_recall"]), pct(x["macro_f1"])]
@@ -297,7 +296,7 @@ def build():
     para(doc, "图3回答模型对挖矿程序变化有多敏感：它把MineShark同分布抓包隔离结果与NBMiner训练、XMRig测试的跨程序结果放在同一尺度上。读者可以直接看到工作负载迁移造成的准确率损失，以及这对网络监测点告警可靠性的实际影响。", first=False)
     para(doc, "图3回答挖矿程序从NBMiner变为XMRig时性能损失有多大；它把工作负载迁移转化为网络监测点部署时可直接理解的准确率代价。", first=False)
     figure(doc, M / "workload_shift_comparison.png", "图3 MineShark三类代理任务的同分布评估与跨挖矿程序评估")
-    para(doc, "当训练业务改为NBMiner、测试业务改为XMRig时，RF、SVM和KNN准确率分别为44.81%、46.66%和55.34%。SVM相对于按文件隔离的同分布测试下降50.61个百分点，说明它学到的部分模式与挖矿程序、底层矿池协议及连接节奏有关。该结果不意味着KNN普遍优于SVM，只说明在本次固定配置和特定迁移条件下，KNN降幅较小。")
+    para(doc, "当训练业务改为NBMiner、测试业务改为XMRig时，RF、SVM和KNN准确率分别为44.81%、46.66%和55.34%；SVM较同分布测试低50.61个百分点。机制解释和部署含义见第6节。")
 
     heading(doc, "5.4 随机森林特征重要性分析", 2)
     importance = read_metrics(J / "feature_importance.csv")
@@ -370,6 +369,10 @@ def build():
         "[13] Anderson B, McGrew D. Machine Learning for Encrypted Malware Traffic Classification[C]. IEEE MILCOM, 2016: 1–6. DOI: 10.1109/MILCOM.2016.7795421.",
         "[14] Anderson B, McGrew D. Identifying Encrypted Malware Traffic with Contextual Flow Data[C]. Proceedings of the 2016 ACM Workshop on Artificial Intelligence and Security, 2016: 35–46. DOI: 10.1145/2996758.2996760.",
         "[15] JA3: SSL/TLS Client Fingerprinting. Salesforce Engineering, 2017. Peer-reviewed context: Anderson and McGrew [13,14]; this web description is not used as the sole evidence.",
+        "[16] Aceto G, Ciuonzo D, Montieri A, Pescape A. Mobile encrypted traffic classification using deep learning: Experimental evaluation, lessons learned, and challenges[J]. IEEE Transactions on Network and Service Management, 2020, 17(2): 445–458. DOI: 10.1109/TNSM.2020.2989162.",
+        "[17] Rezaei S, Liu X. Deep learning for encrypted traffic classification: An overview[J]. IEEE Communications Magazine, 2019, 57(5): 76–81. DOI: 10.1109/MCOM.2019.1800819.",
+        "[18] Lotfollahi M, Siavoshani M J, Zade R S H, Saberian M. Deep packet: A novel approach for encrypted traffic classification using deep learning[J]. Soft Computing, 2020, 24: 1999–2012. DOI: 10.1007/s00500-019-04030-2.",
+        "[19] Raji I D, Buolamwini J. Actionable auditing: Investigating the impact of publicly naming biased performance results[C]. AIES, 2019: 429–435. DOI: 10.1145/3306618.3314244.",
     ]
     for ref in refs:
         para(doc, ref, first=False, after=5)
