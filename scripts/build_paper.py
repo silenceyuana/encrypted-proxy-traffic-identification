@@ -229,6 +229,7 @@ def build():
     para(doc, "本文解决的具体问题不是再增加一个模型排行榜，而是让网络监测系统知道什么时候可以信任一个分数。我们用Fixed-split Evaluation和Repeated Internal Evaluation拆开训练规模与测试来源，用抓包文件而不是窗口随机行作为MineShark分组单位，并用NBMiner到XMRig迁移量化业务域变化。对于实际监测点、边缘节点和未来互联网流量管理，这意味着模型必须声明训练域和测试域，发现新工作负载时重新训练或校准，并允许未知流量拒识，而不能把闭集最高准确率当作普遍协议识别能力。所有数值仍保留源数据标签，不通过重命名补齐缺失的VLESS或普通HTTPS。")
     heading(doc, "2 数据来源与标签审计")
     para(doc, "首先核对了ISCXVPN2016官方说明。该数据集提供OpenVPN与非VPN流量及浏览、聊天、文件传输等应用类别，确实适合VPN识别研究，但不能据此推断Shadowsocks、VLESS或Trojan的逐协议标签[1]。本文最终采用两套包含真实采集记录且可直接下载的研究工件：NESTTOR/JA4Tor发布的流级CSV[3]，以及MineShark在Zenodo发布的抓包派生记录[4]。两者所研究的业务与协议不同，实验不混合训练。")
+    para(doc, "表1首先回答数据是否真的支持目标四分类：它把每个公开数据源的原始标签、样本单位和缺失类别放在同一张审计表中，避免把NonTor、ShadowsocksR或VMess直接重命名为普通HTTPS或Shadowsocks。", first=False)
     caption(doc, "表1 公开数据与目标标签的对应关系")
     table(doc, ["数据源", "实有类别", "样本与来源", "与目标四类的差距"], [
         ["JA4Tor", "NonTor、Tor、Tor-SS、Tor-Trojan、Tor-VMess", "20 000训练流；5 000测试流；另有5 024条test-cross", "无VLESS；NonTor不能确认为纯HTTPS；代理内载荷为Tor"],
@@ -238,7 +239,7 @@ def build():
     para(doc, "MineShark归档经发布页MD5校验为6c64268ec35414fc9f483a7a4ed43755。其README明确说明`ssr`为ShadowsocksR，`v2ray`为VMess；每份TSV记录帧时间、帧长、端点和端口。本文从103份ShadowsocksR、41份Trojan、64份VMess记录提取特征，模型输入不含IP、端口、矿池名或采集日期。源工件另含`normal.pcap`，但其中混有大量非HTTPS端口，且没有逐流HTTPS真值标签，故不把它标为普通HTTPS。")
 
     heading(doc, "3 特征与分类方法")
-    para(doc, "图1概括从真实流量工件到分类结果的数据处理流程。JA4Tor直接读取作者提供的流级CSV；MineShark使用原始抓包派生TSV记录提取窗口统计量。文件隔离在窗口抽样之前确定，缺失值填补和标准化参数只由训练数据拟合。")
+    para(doc, "图1回答实验如何从公开工件走到可复核指标：它显示数据读取、标签审计、特征提取、抓包或文件分组、训练专属预处理和最终评估之间的顺序。JA4Tor直接读取作者提供的流级CSV；MineShark使用原始抓包派生TSV记录提取窗口统计量。文件隔离在窗口抽样之前确定，缺失值填补和标准化参数只由训练数据拟合。")
     figure(doc, ROOT / "results/figures/methodology.png", "图1 数据流处理与模型评估流程")
     heading(doc, "3.1 可见特征", 2)
     para(doc, "JA4Tor使用原始CSV中30项长度、时间和方向统计量：双向包数与字节数、正反向包长均值及离散程度、整流及单方向IAT均值和极值、流持续时间、下行与上行比例等。MineShark以每份采集文件内非重叠60秒窗口为样本，保留至少12帧的窗口，计算20项特征，包括帧长均值、标准差、中位数与90分位数，IAT均值、标准差与90分位数，上行帧占比、下行/上行字节比和方向切换率。设相邻包到达时间为tᵢ，则IATᵢ=tᵢ−tᵢ₋₁；设下行与上行字节量分别为B↓、B↑，比例为B↓/max(B↑,1)。全部特征仅来自外在元数据。")
@@ -267,15 +268,19 @@ def build():
 
     heading(doc, "5 实验结果")
     heading(doc, "5.1 JA4Tor流级基线", 2)
+    para(doc, "表2回答固定公开测试文件上的基线性能是多少，以及第二公开测试文件是否保持相同排序；它只比较同一标签体系下的文件结果，不把内部重复实验混入固定测试集。", first=False)
     caption(doc, "表2 JA4Tor五类流量分类结果 单位为百分比")
     table(doc, ["测试文件", "模型", "准确率", "宏召回率", "宏F1"], [
         ["test.csv" if x["dataset"] == "test.csv" else "test-cross.csv", x["model"], pct(x["accuracy"]), pct(x["macro_recall"]), pct(x["macro_f1"])]
         for x in sorted(jm, key=lambda r: (r["dataset"] != "test.csv", ["Random Forest", "SVM RBF", "KNN k=7"].index(r["model"])))
     ], [3.3, 4.0, 2.5, 2.7, 2.5])
+    para(doc, "图2回答两个公开测试文件是否给出一致的模型排序和性能水平：它并列展示Fixed-split Evaluation在test.csv上的结果以及第二公开文件test-cross.csv上的准确率与宏平均召回率。该图用于识别文件来源变化带来的结果差异，而不是把test-cross.csv解释为已证实的跨抓包或跨节点泛化。", first=False)
+    para(doc, "图2回答固定JA4Tor测试集与第二个公开测试文件是否保持相近的准确率、宏平均召回率和模型排序；它是文件级稳定性比较，不能据此推出抓包隔离或跨节点泛化。", first=False)
     figure(doc, J / "accuracy_recall.png", "图2 JA4Tor公开测试文件上的准确率与宏平均召回率")
     para(doc, "在`test.csv`上，RF达到92.12%的准确率，高于SVM的89.72%和KNN的88.24%。RF对Tor-SS和Tor-Trojan的召回率分别为88.60%和93.40%，反映两类代理封装流量的可区分性并不一致。换用`test-cross.csv`后，RF准确率降到87.54%，SVM降到76.73%，KNN降到79.40%。由于公开工件缺少抓包级对应关系，这一变化只能被视为第二测试文件上的性能差异，不能直接归因为跨节点或跨时间泛化。")
 
     heading(doc, "5.2 MineShark抓包文件隔离评估", 2)
+    para(doc, "表3回答在不让同一原始抓包跨越训练和测试时，三类MineShark窗口能达到什么性能；训练窗口、测试窗口和每类573支持数同时给出，用于核对混淆矩阵的分母。", first=False)
     caption(doc, "表3 MineShark三类代理抓包窗口分类结果 单位为百分比")
     table(doc, ["模型", "训练窗口", "测试窗口", "准确率", "宏召回率", "宏F1"], [
         [x["model"], x["n_train"], x["n_test"], pct(x["accuracy"]), pct(x["macro_recall"]), pct(x["macro_f1"])]
@@ -283,11 +288,14 @@ def build():
     ], [3.4, 2.2, 2.2, 2.2, 2.5, 2.2])
     para(doc, "当前审计工件在4 743个训练窗口和1 719个测试窗口上运行，测试集严格为三类各573个窗口；SVM最高，准确率与宏平均召回率均为97.27%，RF为94.30%，KNN为92.44%。SVM对ShadowsocksR、Trojan和VMess的召回率分别为98.60%、96.51%和96.68%。旧版结果文件results/mineshark/per_class.csv另有三类各740、合计2 220个支持数，但其对应的分区清单和抓包来源在当前工件中不存在，不能与本次1 719窗口实验合并；本文将其视为未能追溯的历史汇总，不报告其指标。与JA4Tor结果不能直接合并排名：样本单位、标签和业务负载均不同。")
     heading(doc, "5.3 业务负载变化检验", 2)
+    para(doc, "表4回答模型是否依赖具体挖矿程序：它保持代理类别不变，只把训练域从NBMiner换成XMRig测试域，因此性能下降可以解释为工作负载迁移压力，而不是新增类别。", first=False)
     caption(doc, "表4 NBMiner训练 XMRig测试的迁移结果 单位为百分比")
     table(doc, ["模型", "训练窗口", "测试窗口", "准确率", "宏召回率", "宏F1"], [
         [x["model"], x["n_train"], x["n_test"], pct(x["accuracy"]), pct(x["macro_recall"]), pct(x["macro_f1"])]
         for x in shift
     ], [3.4, 2.2, 2.2, 2.2, 2.5, 2.2])
+    para(doc, "图3回答模型对挖矿程序变化有多敏感：它把MineShark同分布抓包隔离结果与NBMiner训练、XMRig测试的跨程序结果放在同一尺度上。读者可以直接看到工作负载迁移造成的准确率损失，以及这对网络监测点告警可靠性的实际影响。", first=False)
+    para(doc, "图3回答挖矿程序从NBMiner变为XMRig时性能损失有多大；它把工作负载迁移转化为网络监测点部署时可直接理解的准确率代价。", first=False)
     figure(doc, M / "workload_shift_comparison.png", "图3 MineShark三类代理任务的同分布评估与跨挖矿程序评估")
     para(doc, "当训练业务改为NBMiner、测试业务改为XMRig时，RF、SVM和KNN准确率分别为44.81%、46.66%和55.34%。SVM相对于按文件隔离的同分布测试下降50.61个百分点，说明它学到的部分模式与挖矿程序、底层矿池协议及连接节奏有关。该结果不意味着KNN普遍优于SVM，只说明在本次固定配置和特定迁移条件下，KNN降幅较小。")
 
@@ -295,6 +303,8 @@ def build():
     importance = read_metrics(J / "feature_importance.csv")
     top = importance[:10]
     para(doc, "为解释JA4Tor五分类模型的判别依据，采用与5.1节完全相同的随机森林参数在20 000条训练流上重新拟合，读取基于不纯度平均下降的特征重要性（MDI）。该模型在原测试集的准确率复核为92.12%；排名仅从训练模型导出，没有使用测试集调参。全部30项重要性之和为1，图4给出前10项。")
+    para(doc, "图4回答随机森林在JA4Tor固定评估中主要依赖哪些可观测统计量：它按训练集拟合后的MDI给出前十项特征，用于检查模型是否过度依赖某一类包长、方向或时间变量。该图是关联性审计，不提供协议机制的因果证明，也不能保证排名在其他采集域保持不变。", first=False)
+    para(doc, "图4回答随机森林在JA4Tor上主要依赖哪些可观测的包长、方向和时间统计量；该排序用于关联性审计，不是协议机制的因果证据，也不保证在其他网络域稳定。", first=False)
     figure(doc, J / "feature_importance.png", "图4 JA4Tor随机森林前10项特征的MDI重要性")
     leading = "、".join(f"{x['feature']}（{pct(x['importance'])}%）" for x in top[:3])
     para(doc, "排名前三的特征为" + leading + f"。前10项合计占总重要性的{sum(float(x['importance']) for x in top)*100:.2f}%。这表明本次模型主要利用包长分布、方向比例和部分时间统计量进行区分。MDI对连续或取值丰富的变量可能存在偏好，相关特征也会分摊重要性，因此该排序不能解释为协议的因果特征或跨网络环境的稳定排序。")

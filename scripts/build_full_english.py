@@ -75,29 +75,54 @@ def main():
     head(doc,'Evaluation protocol names',2)
     para(doc,'The manuscript uses two exact names throughout. Fixed-split Evaluation means training on the complete public JA4Tor train.csv file with 20,000 flows and testing on the separate fixed test.csv file with 5,000 flows. Repeated Internal Evaluation means re-dividing the public train.csv file into 16,000 training flows and 4,000 internal test flows for ten seeds. The protocols share feature definitions, imputation, standardization, and model settings, but they do not share the same training size or test source.')
     head(doc,'Tables and Figures',1)
+    para(doc,'The following tables answer four separate audit questions: what labels are actually available, how the two JA4Tor test files compare, whether MineShark performance survives a source-capture-disjoint split, and how strongly workload changes affect the reported scores.')
+    para(doc,'Table 1 answers whether the available source labels and sample provenance support the claimed four-class task. It makes label gaps and the difference between the observed datasets and the intended deployment categories explicit before any accuracy is interpreted.')
+    para(doc,'Table 1 answers whether the available source labels actually support the target four-class question. It places observed labels, sample units, and missing categories side by side so that protocol names are not silently inferred from filenames.')
     para(doc,'Table 1. Dataset labels and evaluation scope.')
     add_table(doc,['Source','Observed labels','Samples and source','Difference from target four-class task'],[
         ['JA4Tor','NonTor, Tor, Tor-SS, Tor-Trojan, Tor-VMess','20,000 training flows; 5,000 test flows; 5,024 test-cross flows','No VLESS; NonTor is not verified ordinary HTTPS; proxy payload labels are Tor-based'],
         ['MineShark','ShadowsocksR, Trojan, VMess','208 original capture files; 12,401 extracted 60-second windows','ShadowsocksR is not identical to Shadowsocks; no VLESS or ordinary HTTPS']])
+    para(doc,'Table 2 answers whether model ranking and performance remain stable across JA4Tor’s two published test files. The comparison separates the fixed public test result from the cross-file check and therefore exposes possible test-source sensitivity.')
+    para(doc,'Table 2 answers whether the fixed JA4Tor test result is stable across the second published test file and whether model ranking is preserved. It compares file-level outcomes while keeping the repeated internal evaluation separate.')
     para(doc,'Table 2. JA4Tor results on the two published test files (percent).')
     add_table(doc,['Test file','Model','Accuracy','Macro recall','Macro F1'],[
         ['test.csv','Random Forest','92.12','92.12','92.27'],['test.csv','SVM RBF','89.72','89.72','89.90'],['test.csv','KNN k=7','88.24','88.24','88.21'],['test-cross.csv','Random Forest','87.54','87.69','87.33'],['test-cross.csv','SVM RBF','76.73','76.99','74.38'],['test-cross.csv','KNN k=7','79.40','79.58','78.23']])
+    para(doc,'Table 3 answers how the classifiers perform when MineShark windows from the held-out source captures are evaluated with the current 1,719-window denominator. This is the paper’s most direct check of leakage-resistant source separation for that dataset.')
+    para(doc,'Table 3 answers what performance remains when the same original capture file is prevented from contributing windows to both training and testing. The train/test totals and the per-class support denominator make the confusion-matrix accounting auditable.')
     para(doc,'Table 3. MineShark source-capture-disjoint classification results (percent).')
     add_table(doc,['Model','Training windows','Test windows','Accuracy','Macro recall','Macro F1'],[
         ['Random Forest','4,743','1,719','94.30','94.30','94.30'],['SVM RBF','4,743','1,719','97.27','97.27','97.27'],['KNN k=7','4,743','1,719','92.44','92.44','92.43']])
+    para(doc,'Table 4 answers how much accuracy is lost when the mining workload changes from NBMiner in training to XMRig at test time. The result quantifies the deployment cost of assuming that a classifier sees the same workload distribution after release.')
+    para(doc,'Table 4 answers whether the classifiers depend on the mining program used during collection. Proxy labels stay fixed while training uses NBMiner and testing uses XMRig, isolating workload-shift pressure from a new-class effect.')
     para(doc,'Table 4. NBMiner-to-XMRig workload-shift results (percent).')
     add_table(doc,['Model','Training windows','Test windows','Accuracy','Macro recall','Macro F1'],[
         ['Random Forest','3,702','1,899','44.81','44.81','46.08'],['SVM RBF','3,702','1,899','46.66','46.66','42.87'],['KNN k=7','3,702','1,899','55.34','55.34','54.55']])
     para(doc,'The tables preserve the complete editable data from the Chinese source document. The fixed JA4Tor table, the MineShark 1,719-window table, and the workload-shift table are separate experiments and must not be merged into one leaderboard. The historical 2,220-support summary is discussed in the text because it belongs to an earlier experiment version and has no matching current capture-split table.')
     head(doc,'Figures',1)
+    para(doc,'The figures provide a visual audit of the protocol and its implications: the processing order, the JA4Tor test-file comparison, the MineShark workload-shift penalty, and the features most used by the Random Forest. Each figure is interpreted as evidence for a defined evaluation question rather than as an isolated performance illustration.')
     figures=[
         (ROOT/'results/figures/methodology.png','Figure 1. Data processing and classifier evaluation pipeline.'),
         (ROOT/'results/ja4tor/accuracy_recall.png','Figure 2. JA4Tor accuracy and macro recall.'),
         (ROOT/'results/mineshark/workload_shift_comparison.png','Figure 3. MineShark in-distribution and workload-shift performance.'),
         (ROOT/'results/ja4tor/feature_importance.png','Figure 4. Random Forest feature-importance ranking.'),
     ]
-    for image_path, caption in figures:
+    figure_explanations=[
+        'Figure 1 answers how public artifacts become auditable metrics. It shows the order of data reading, label audit, feature extraction, capture or file grouping, train-only preprocessing, and final evaluation.',
+        'Figure 2 answers whether the fixed JA4Tor evaluation and the second published test file yield consistent performance and model ranking. It is a file-level comparison and does not establish capture-disjoint or cross-node generalization.',
+        'Figure 3 answers how much performance is lost when the mining workload changes from NBMiner to XMRig. The comparison translates workload shift into a deployment-relevant accuracy loss for network monitoring points.',
+        'Figure 4 answers which observable packet-length, direction, and timing statistics receive the largest Random Forest MDI importance on JA4Tor. The ranking is an association audit, not causal evidence about protocol mechanisms or a guarantee of stability in another domain.'
+    ]
+    for idx,(image_path, caption) in enumerate(figures):
+        para(doc, figure_explanations[idx])
         if image_path.exists():
+            if 'methodology' in image_path.name:
+                para(doc,'Figure 1 answers how raw public artifacts are converted into auditable metrics. It shows the order of data reading, label auditing, feature extraction, grouping by capture or file, train-only preprocessing, and evaluation.')
+            elif 'accuracy_recall' in image_path.name:
+                para(doc,'Figure 2 answers whether JA4Tor accuracy and macro recall tell the same story across the fixed test and cross-file evaluations. The paired metrics make ranking changes and class-imbalance effects easier to inspect.')
+            elif 'workload_shift' in image_path.name:
+                para(doc,'Figure 3 answers how sharply performance changes under the NBMiner-to-XMRig workload shift. The visual gap is a direct estimate of the operational penalty that a monitoring point would face without retraining or recalibration.')
+            elif 'feature_importance' in image_path.name:
+                para(doc,'Figure 4 answers which observable flow statistics the Random Forest relies on most in this dataset. These importances describe model associations for audit and interpretation; they are not causal evidence about a protocol.')
             pic=doc.add_paragraph(); pic.alignment=WD_ALIGN_PARAGRAPH.CENTER; pic.add_run().add_picture(str(image_path), width=Inches(6.2))
             cap=doc.add_paragraph(); cap.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(cap.add_run(caption),9)
     para(doc,'Figure 1. Data processing and classifier evaluation pipeline. Figure 2. JA4Tor accuracy and macro recall. Figure 3. MineShark workload-shift performance. Figure 4. Random Forest feature-importance ranking. High-resolution editable figure files are supplied separately in submission_assets/figures.')
