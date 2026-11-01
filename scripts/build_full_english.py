@@ -54,6 +54,8 @@ def main():
     doc=Document(); sec=doc.sections[0]; sec.top_margin=Inches(.8); sec.bottom_margin=Inches(.8); sec.left_margin=Inches(.85); sec.right_margin=Inches(.85)
     p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(p.add_run('Evaluating Machine Learning-Based Encrypted Traffic Classification Under Capture-Disjoint and Workload-Shift Conditions'),18,True)
     p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(p.add_run('Zhang Xiaoyuan | Independent Researcher | silenceyuan2018@gmail.com | ORCID 0009-0006-6147-9256'),10)
+    head(doc,'Abstract',1)
+    para(doc,'Encrypted proxies conceal application payloads, but packet length, timing, and direction remain observable. Existing evaluations often combine random row splits, fixed test files, capture-disjoint results, and workload-transfer results, making leakage and workload dependence difficult to assess. This study establishes a reproducible network-monitoring baseline and separates these conditions explicitly. JA4Tor Fixed-split Evaluation uses 20,000 public training flows and 5,000 fixed test flows; Random Forest reaches 92.12% accuracy and XGBoost 92.08%. Repeated Internal Evaluation resamples the public training file into 16,000 training and 4,000 internal test flows for ten runs, yielding 87.47% ± 0.39% for Random Forest and 87.97% ± 0.44% for XGBoost. MineShark uses 4,743 training windows and 1,719 test windows, with 573 per class. SVM reaches 97.27% under the current source-capture-disjoint split, but falls to 46.66% when training on NBMiner and testing on XMRig, a loss of 50.61 percentage points. The results show why deployed detectors should state their training domain, retrain or recalibrate after workload changes, and support an unknown or reject output. JA4Tor lacks complete capture provenance, and no external score is reported for CIC-Darknet2020 or ISCXVPN2016 because the required data files were unavailable. Neither source provides complete labels for a Shadowsocks, VLESS, Trojan, and ordinary-HTTPS four-class benchmark.')
     buf=[]; env=False
     for line in body.splitlines():
         st=line.strip()
@@ -73,27 +75,24 @@ def main():
         buf.append(st)
     if buf: para(doc,clean(' '.join(buf)))
     head(doc,'Evaluation protocol names',2)
+    para(doc,'Model roles are defined explicitly. Random Forest, RBF SVM, and KNN are the primary comparison models used in the consistent three-model tables. Logistic Regression, HistGradientBoosting, and XGBoost are supplementary baselines reported in the extended results; XGBoost is additionally included in the JA4Tor headline comparison.')
     para(doc,'The manuscript uses two exact names throughout. Fixed-split Evaluation means training on the complete public JA4Tor train.csv file with 20,000 flows and testing on the separate fixed test.csv file with 5,000 flows. Repeated Internal Evaluation means re-dividing the public train.csv file into 16,000 training flows and 4,000 internal test flows for ten seeds. The protocols share feature definitions, imputation, standardization, and model settings, but they do not share the same training size or test source.')
     head(doc,'Tables and Figures',1)
-    para(doc,'The following tables answer four separate audit questions: what labels are actually available, how the two JA4Tor test files compare, whether MineShark performance survives a source-capture-disjoint split, and how strongly workload changes affect the reported scores.')
-    para(doc,'Table 1 answers whether the available source labels and sample provenance support the claimed four-class task. It makes label gaps and the difference between the observed datasets and the intended deployment categories explicit before any accuracy is interpreted.')
-    para(doc,'Table 1 answers whether the available source labels actually support the target four-class question. It places observed labels, sample units, and missing categories side by side so that protocol names are not silently inferred from filenames.')
+    para(doc,'The following tables address four separate questions: which labels are available, how the two JA4Tor test files compare, whether MineShark performance survives source-capture separation, and how workload changes affect the scores.')
+    para(doc,'Table 1 places observed labels, sample units, and missing categories side by side. This establishes whether the available data support the proposed four-class task before any accuracy is interpreted.')
     para(doc,'Table 1. Dataset labels and evaluation scope.')
     add_table(doc,['Source','Observed labels','Samples and source','Difference from target four-class task'],[
         ['JA4Tor','NonTor, Tor, Tor-SS, Tor-Trojan, Tor-VMess','20,000 training flows; 5,000 test flows; 5,024 test-cross flows','No VLESS; NonTor is not verified ordinary HTTPS; proxy payload labels are Tor-based'],
         ['MineShark','ShadowsocksR, Trojan, VMess','208 original capture files; 12,401 extracted 60-second windows','ShadowsocksR is not identical to Shadowsocks; no VLESS or ordinary HTTPS']])
-    para(doc,'Table 2 answers whether model ranking and performance remain stable across JA4Tor’s two published test files. The comparison separates the fixed public test result from the cross-file check and therefore exposes possible test-source sensitivity.')
-    para(doc,'Table 2 answers whether the fixed JA4Tor test result is stable across the second published test file and whether model ranking is preserved. It compares file-level outcomes while keeping the repeated internal evaluation separate.')
+    para(doc,'Table 2 compares performance and model ranking across JA4Tor’s two published test files. The fixed-file result remains separate from the repeated internal evaluation, making test-source sensitivity visible.')
     para(doc,'Table 2. JA4Tor results on the two published test files (percent).')
     add_table(doc,['Test file','Model','Accuracy','Macro recall','Macro F1'],[
         ['test.csv','Random Forest','92.12','92.12','92.27'],['test.csv','SVM RBF','89.72','89.72','89.90'],['test.csv','KNN k=7','88.24','88.24','88.21'],['test-cross.csv','Random Forest','87.54','87.69','87.33'],['test-cross.csv','SVM RBF','76.73','76.99','74.38'],['test-cross.csv','KNN k=7','79.40','79.58','78.23']])
-    para(doc,'Table 3 answers how the classifiers perform when MineShark windows from the held-out source captures are evaluated with the current 1,719-window denominator. This is the paper’s most direct check of leakage-resistant source separation for that dataset.')
-    para(doc,'Table 3 answers what performance remains when the same original capture file is prevented from contributing windows to both training and testing. The train/test totals and the per-class support denominator make the confusion-matrix accounting auditable.')
+    para(doc,'Table 3 reports performance when complete MineShark capture files are held out before window sampling. Train/test totals and per-class support make the confusion-matrix denominator transparent.')
     para(doc,'Table 3. MineShark source-capture-disjoint classification results (percent).')
     add_table(doc,['Model','Training windows','Test windows','Accuracy','Macro recall','Macro F1'],[
         ['Random Forest','4,743','1,719','94.30','94.30','94.30'],['SVM RBF','4,743','1,719','97.27','97.27','97.27'],['KNN k=7','4,743','1,719','92.44','92.44','92.43']])
-    para(doc,'Table 4 answers how much accuracy is lost when the mining workload changes from NBMiner in training to XMRig at test time. The result quantifies the deployment cost of assuming that a classifier sees the same workload distribution after release.')
-    para(doc,'Table 4 answers whether the classifiers depend on the mining program used during collection. Proxy labels stay fixed while training uses NBMiner and testing uses XMRig, isolating workload-shift pressure from a new-class effect.')
+    para(doc,'Table 4 measures the deployment penalty when training uses NBMiner and testing uses XMRig. Proxy labels remain fixed, so the comparison isolates workload shift rather than a new-class effect.')
     para(doc,'Table 4. NBMiner-to-XMRig workload-shift results (percent).')
     add_table(doc,['Model','Training windows','Test windows','Accuracy','Macro recall','Macro F1'],[
         ['Random Forest','3,702','1,899','44.81','44.81','46.08'],['SVM RBF','3,702','1,899','46.66','46.66','42.87'],['KNN k=7','3,702','1,899','55.34','55.34','54.55']])
