@@ -4,6 +4,7 @@ from docx.shared import Inches, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+import re
 
 ROOT=Path(__file__).resolve().parents[1]
 TEX=ROOT/'latex_ieee/encrypted_proxy_traffic_ieee.tex'
@@ -51,6 +52,23 @@ def add_table(doc, headers, rows):
 
 def main():
     raw=TEX.read_text(encoding='utf-8'); body=raw.split(BS+'begin{document}',1)[1].split(BS+'end{document}',1)[0]
+    # Keep the submission body compact: detailed audit material is retained in the repository appendix/results files.
+    cut_start = body.find(BS+'section{Extended Results and Resource Costs}')
+    cut_end = body.find(BS+'section{Code and Data Availability}')
+    if cut_start >= 0 and cut_end > cut_start:
+        discussion = (BS+'section{Discussion}\n'
+          'The primary comparison uses Random Forest, RBF SVM, and KNN. Logistic Regression, HistGradientBoosting, and XGBoost are supplementary baselines; XGBoost is also retained in the JA4Tor headline comparison. The three primary models define the consistent MineShark tables.\n\n'
+          'The evaluation regimes answer different deployment questions. Fixed-split Evaluation measures compatibility with the released JA4Tor files. Repeated Internal Evaluation measures sensitivity to resampling within the public training file. MineShark source-capture separation tests unseen capture files, while the NBMiner-to-XMRig experiment changes workload while retaining the broad task and labels. These estimates are complementary and must not be averaged.\n\n'
+          'RF reaches 92.12% and XGBoost 92.08% on the JA4Tor 20,000/5,000 split. Repeated 16,000/4,000 evaluation yields 87.47% +/- 0.39% and 87.97% +/- 0.44%, respectively. The difference reflects both training size and test source. Because the public CSV files lack complete row-to-PCAP provenance, these results do not establish capture-disjointness or cross-node generalization.\n\n'
+          'MineShark assigns complete captures before balancing. The current evaluation contains 4,743 training and 1,719 test windows, with 573 per class; SVM reaches 97.27%. The historical 2,220-window summary belongs to an earlier sampling version. Capture separation reduces direct leakage but does not guarantee independence when captures share hosts, pools, software, or collection periods.\n\n'
+          'Training on NBMiner and testing on XMRig reduces SVM accuracy from 97.27% to 46.66%, a loss of 50.61 percentage points. RF and KNN also fall to 44.81% and 55.34%. The change may reflect scheduling, buffering, pool interaction, library defaults, or packet batching. Deployed detectors should declare their operating domain, detect drift, retrain or recalibrate after domain change, and allow an unknown or reject output.\n\n'
+          'The evidence is bounded by label coverage and external validity. Neither source provides a complete verified Shadowsocks, VLESS, Trojan, and ordinary-HTTPS taxonomy. JA4Tor NonTor is not ordinary-HTTPS ground truth, and JA4Tor capture provenance is incomplete. CIC-Darknet2020 and ISCXVPN2016 remain pending because authorized data files were unavailable. Any future validation must preserve source labels, record hashes, verify capture grouping, and fit preprocessing on the source training partition only.\n\n'
+          'For monitoring points and edge nodes, reports should include the training domain, capture or run grouping, class supports, uncertainty under repeated splits, and a drift response. Calibration and abstention should be evaluated before unfamiliar workloads are forced into known classes. The evidence supports interpretable baselines and a reproducible measurement protocol, not universal protocol recognition.\n\n'
+          +BS+'section{Conclusion}\n'
+          'This study separates fixed-file compatibility, repeated internal resampling, source-capture separation, and workload transfer for encrypted proxy traffic classification. The reported scores support domain declarations, retraining or recalibration, and unknown-class handling in deployed detectors. They do not establish a complete four-class benchmark or JA4Tor capture-disjointness, and no external dataset score is claimed.\n\n'
+          +BS+'appendix\n'+BS+'section{Audit Details}\n'
+          'Candidate-window counts, selected supports, capture partitions, hashes, model parameters, predictions, per-class metrics, confusion matrices, timing measurements, and serialized model sizes remain in the repository results/extended directory. They are supporting audit material and do not redefine the primary tables.\n\n')
+        body = body[:cut_start] + discussion + body[cut_end:]
     doc=Document(); sec=doc.sections[0]; sec.top_margin=Inches(.8); sec.bottom_margin=Inches(.8); sec.left_margin=Inches(.85); sec.right_margin=Inches(.85)
     p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(p.add_run('Evaluating Machine Learning-Based Encrypted Traffic Classification Under Capture-Disjoint and Workload-Shift Conditions'),18,True)
     p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(p.add_run('Zhang Xiaoyuan | Independent Researcher | silenceyuan2018@gmail.com | ORCID 0009-0006-6147-9256'),10)
@@ -78,21 +96,20 @@ def main():
     para(doc,'Model roles are defined explicitly. Random Forest, RBF SVM, and KNN are the primary comparison models used in the consistent three-model tables. Logistic Regression, HistGradientBoosting, and XGBoost are supplementary baselines reported in the extended results; XGBoost is additionally included in the JA4Tor headline comparison.')
     para(doc,'The manuscript uses two exact names throughout. Fixed-split Evaluation means training on the complete public JA4Tor train.csv file with 20,000 flows and testing on the separate fixed test.csv file with 5,000 flows. Repeated Internal Evaluation means re-dividing the public train.csv file into 16,000 training flows and 4,000 internal test flows for ten seeds. The protocols share feature definitions, imputation, standardization, and model settings, but they do not share the same training size or test source.')
     head(doc,'Tables and Figures',1)
-    para(doc,'The following tables address four separate questions: which labels are available, how the two JA4Tor test files compare, whether MineShark performance survives source-capture separation, and how workload changes affect the scores.')
-    para(doc,'Table 1 places observed labels, sample units, and missing categories side by side. This establishes whether the available data support the proposed four-class task before any accuracy is interpreted.')
+    para(doc,'Tables 1–4 report the label scope, file-level JA4Tor comparison, source-capture-disjoint MineShark result, and workload-shift result. Each table is tied to one evaluation condition so that denominators and model roles remain clear.')
     para(doc,'Table 1. Dataset labels and evaluation scope.')
     add_table(doc,['Source','Observed labels','Samples and source','Difference from target four-class task'],[
         ['JA4Tor','NonTor, Tor, Tor-SS, Tor-Trojan, Tor-VMess','20,000 training flows; 5,000 test flows; 5,024 test-cross flows','No VLESS; NonTor is not verified ordinary HTTPS; proxy payload labels are Tor-based'],
         ['MineShark','ShadowsocksR, Trojan, VMess','208 original capture files; 12,401 extracted 60-second windows','ShadowsocksR is not identical to Shadowsocks; no VLESS or ordinary HTTPS']])
-    para(doc,'Table 2 compares performance and model ranking across JA4Tor’s two published test files. The fixed-file result remains separate from the repeated internal evaluation, making test-source sensitivity visible.')
+    para(doc,'Table 2 reports the JA4Tor file-level comparison; the fixed-file and repeated-internal protocols remain separate because their training sizes and test sources differ.')
     para(doc,'Table 2. JA4Tor results on the two published test files (percent).')
     add_table(doc,['Test file','Model','Accuracy','Macro recall','Macro F1'],[
         ['test.csv','Random Forest','92.12','92.12','92.27'],['test.csv','SVM RBF','89.72','89.72','89.90'],['test.csv','KNN k=7','88.24','88.24','88.21'],['test-cross.csv','Random Forest','87.54','87.69','87.33'],['test-cross.csv','SVM RBF','76.73','76.99','74.38'],['test-cross.csv','KNN k=7','79.40','79.58','78.23']])
-    para(doc,'Table 3 reports performance when complete MineShark capture files are held out before window sampling. Train/test totals and per-class support make the confusion-matrix denominator transparent.')
+    para(doc,'Table 3 reports the MineShark result after complete capture files are assigned before window sampling, with totals that make the denominator explicit.')
     para(doc,'Table 3. MineShark source-capture-disjoint classification results (percent).')
     add_table(doc,['Model','Training windows','Test windows','Accuracy','Macro recall','Macro F1'],[
         ['Random Forest','4,743','1,719','94.30','94.30','94.30'],['SVM RBF','4,743','1,719','97.27','97.27','97.27'],['KNN k=7','4,743','1,719','92.44','92.44','92.43']])
-    para(doc,'Table 4 measures the deployment penalty when training uses NBMiner and testing uses XMRig. Proxy labels remain fixed, so the comparison isolates workload shift rather than a new-class effect.')
+    para(doc,'Table 4 quantifies the deployment penalty when training uses NBMiner and testing uses XMRig; labels remain fixed, isolating workload shift.')
     para(doc,'Table 4. NBMiner-to-XMRig workload-shift results (percent).')
     add_table(doc,['Model','Training windows','Test windows','Accuracy','Macro recall','Macro F1'],[
         ['Random Forest','3,702','1,899','44.81','44.81','46.08'],['SVM RBF','3,702','1,899','46.66','46.66','42.87'],['KNN k=7','3,702','1,899','55.34','55.34','54.55']])
@@ -106,25 +123,17 @@ def main():
         (ROOT/'results/ja4tor/feature_importance.png','Figure 4. Random Forest feature-importance ranking.'),
     ]
     figure_explanations=[
-        'Figure 1 answers how public artifacts become auditable metrics. It shows the order of data reading, label audit, feature extraction, capture or file grouping, train-only preprocessing, and final evaluation.',
-        'Figure 2 answers whether the fixed JA4Tor evaluation and the second published test file yield consistent performance and model ranking. It is a file-level comparison and does not establish capture-disjoint or cross-node generalization.',
-        'Figure 3 answers how much performance is lost when the mining workload changes from NBMiner to XMRig. The comparison translates workload shift into a deployment-relevant accuracy loss for network monitoring points.',
-        'Figure 4 answers which observable packet-length, direction, and timing statistics receive the largest Random Forest MDI importance on JA4Tor. The ranking is an association audit, not causal evidence about protocol mechanisms or a guarantee of stability in another domain.'
+        'Figure 1 shows the ordered path from public artifacts and label checks to feature extraction, train-only preprocessing, and evaluation.',
+        'Figure 2 compares accuracy and macro recall across the two JA4Tor test files, making file-level ranking changes visible.',
+        'Figure 3 quantifies the performance penalty when the mining workload changes from NBMiner to XMRig.',
+        'Figure 4 ranks the observable packet-length, direction, and timing statistics used by the JA4Tor Random Forest; the ranking is associative rather than causal.'
     ]
     for idx,(image_path, caption) in enumerate(figures):
         para(doc, figure_explanations[idx])
         if image_path.exists():
-            if 'methodology' in image_path.name:
-                para(doc,'Figure 1 answers how raw public artifacts are converted into auditable metrics. It shows the order of data reading, label auditing, feature extraction, grouping by capture or file, train-only preprocessing, and evaluation.')
-            elif 'accuracy_recall' in image_path.name:
-                para(doc,'Figure 2 answers whether JA4Tor accuracy and macro recall tell the same story across the fixed test and cross-file evaluations. The paired metrics make ranking changes and class-imbalance effects easier to inspect.')
-            elif 'workload_shift' in image_path.name:
-                para(doc,'Figure 3 answers how sharply performance changes under the NBMiner-to-XMRig workload shift. The visual gap is a direct estimate of the operational penalty that a monitoring point would face without retraining or recalibration.')
-            elif 'feature_importance' in image_path.name:
-                para(doc,'Figure 4 answers which observable flow statistics the Random Forest relies on most in this dataset. These importances describe model associations for audit and interpretation; they are not causal evidence about a protocol.')
             pic=doc.add_paragraph(); pic.alignment=WD_ALIGN_PARAGRAPH.CENTER; pic.add_run().add_picture(str(image_path), width=Inches(6.2))
             cap=doc.add_paragraph(); cap.alignment=WD_ALIGN_PARAGRAPH.CENTER; font(cap.add_run(caption),9)
-    para(doc,'Figure 1. Data processing and classifier evaluation pipeline. Figure 2. JA4Tor accuracy and macro recall. Figure 3. MineShark workload-shift performance. Figure 4. Random Forest feature-importance ranking. High-resolution editable figure files are supplied separately in submission_assets/figures.')
+    para(doc,'High-resolution editable figure files are supplied separately in submission_assets/figures.')
     head(doc,'Declarations',1)
     head(doc,'Competing interests',2); para(doc,'The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.')
     head(doc,'Funding',2); para(doc,'This research received no external funding.')
